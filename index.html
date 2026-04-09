@@ -2011,7 +2011,7 @@ async function loadPublicSoirees() {
         <div class="annonce-type">${statusLabel(s.statut)}</div>
         <div class="annonce-title">${s.nom}</div>
         <div class="annonce-text">${s.description||'Une soirée inoubliable au Tropical Heights !'}</div>
-        <div class="annonce-date">📅 ${fmtDate(s.date_soiree)} à ${s.heure_debut||'22:00'}${s.prix_entree>0?` — 💶 ${s.prix_entree}€ / entrée':' — 🆓 Entrée gratuite'}</div>
+        <div class="annonce-date">📅 ${fmtDate(s.date_soiree)} à ${s.heure_debut||'22:00'}${s.prix_entree>0?' — 💶 '+s.prix_entree+'€ / entrée':' — 🆓 Entrée gratuite'}</div>
       </div>
     </div>`).join('');
 }
