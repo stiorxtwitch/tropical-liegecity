@@ -1449,34 +1449,31 @@ body::before {
 // ============================================================
 // YOUTUBE MUSIC PLAYER
 // ============================================================
-const YT_VIDEO_ID = 'Y6mlwzzJ4lc'; // ID extrait de l'URL YouTube
+const YT_VIDEO_ID = 'Y6mlwzzJ4lc';
 let ytPlayer = null;
 let musicPlaying = false;
 let musicPanelOpen = false;
 let currentVolume = 30;
+let ytReady = false;
 
-// Charge l'API YouTube IFrame
 function loadYouTubeAPI() {
   const tag = document.createElement('script');
   tag.src = 'https://www.youtube.com/iframe_api';
   document.head.appendChild(tag);
 }
 
-// Callback appelé par l'API YT quand elle est prête
 window.onYouTubeIframeAPIReady = function() {
   ytPlayer = new YT.Player('yt-player', {
     height: '1',
     width: '1',
     videoId: YT_VIDEO_ID,
     playerVars: {
-      autoplay: 0,
+      autoplay: 0,      // ← PAS d'autoplay, le navigateur le bloque
       controls: 0,
       loop: 1,
       playlist: YT_VIDEO_ID,
       modestbranding: 1,
       rel: 0,
-      enablejsapi: 1,
-      origin: window.location.origin || 'https://localhost'
     },
     events: {
       onReady: onPlayerReady,
@@ -1487,12 +1484,12 @@ window.onYouTubeIframeAPIReady = function() {
 };
 
 function onPlayerReady(event) {
+  ytReady = true;
   event.target.setVolume(currentVolume);
   updateVolumeSliderBg(currentVolume);
-  // Démarre automatiquement (muté puis ajuste le volume après)
-  event.target.playVideo();
-  musicPlaying = true;
-  updatePlayerUI(true);
+  // Afficher un indicateur "Clique pour la musique"
+  const btn = document.getElementById('music-toggle-btn');
+  if (btn) btn.title = 'Clique pour ouvrir et lancer la musique';
 }
 
 function onPlayerStateChange(event) {
@@ -1502,7 +1499,6 @@ function onPlayerStateChange(event) {
   } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
     musicPlaying = false;
     updatePlayerUI(false);
-    // Relance si la vidéo se termine (boucle de sécurité)
     if (event.data === YT.PlayerState.ENDED) {
       setTimeout(() => { if (ytPlayer) ytPlayer.playVideo(); }, 500);
     }
@@ -1511,7 +1507,6 @@ function onPlayerStateChange(event) {
 
 function onPlayerError(event) {
   console.warn('YouTube player error:', event.data);
-  // Affiche quand même le player sans crash
   updatePlayerUI(false);
 }
 
@@ -1521,18 +1516,29 @@ function updatePlayerUI(playing) {
   const toggleBtn = document.getElementById('music-toggle-btn');
   if (btn) btn.textContent = playing ? '⏸' : '▶';
   if (eq) eq.classList.toggle('paused', !playing);
-  if (toggleBtn) {
-    toggleBtn.classList.toggle('playing', playing);
-    toggleBtn.title = playing ? 'Musique en cours — Cliquer pour ouvrir les contrôles' : 'Musique en pause';
-  }
+  if (toggleBtn) toggleBtn.classList.toggle('playing', playing);
 }
 
 function togglePlayPause() {
-  if (!ytPlayer) return;
+  if (!ytPlayer || !ytReady) { toast('Lecteur pas encore prêt…', 'info'); return; }
   if (musicPlaying) {
     ytPlayer.pauseVideo();
   } else {
     ytPlayer.playVideo();
+  }
+}
+
+function toggleMusicPanel() {
+  musicPanelOpen = !musicPanelOpen;
+  const player = document.getElementById('music-player');
+  if (musicPanelOpen) {
+    player.classList.remove('collapsed');
+    // Lance la musique à la première ouverture du panel (= interaction utilisateur ✓)
+    if (ytReady && !musicPlaying) {
+      ytPlayer.playVideo();
+    }
+  } else {
+    player.classList.add('collapsed');
   }
 }
 
@@ -1541,7 +1547,6 @@ function setVolume(val) {
   if (ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(currentVolume);
   document.getElementById('vol-display').textContent = currentVolume + '%';
   updateVolumeSliderBg(currentVolume);
-  // Icône volume
   const icon = document.querySelector('#volume-area .vol-icon');
   if (icon) icon.textContent = currentVolume === 0 ? '🔇' : currentVolume < 50 ? '🔈' : '🔊';
 }
@@ -1551,17 +1556,6 @@ function updateVolumeSliderBg(val) {
   if (slider) slider.style.setProperty('--vol-pct', val + '%');
 }
 
-function toggleMusicPanel() {
-  musicPanelOpen = !musicPanelOpen;
-  const player = document.getElementById('music-player');
-  if (musicPanelOpen) {
-    player.classList.remove('collapsed');
-  } else {
-    player.classList.add('collapsed');
-  }
-}
-
-// Init
 loadYouTubeAPI();
 </script>
 
