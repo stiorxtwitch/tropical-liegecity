@@ -293,6 +293,58 @@ body::before {
 .photo-item:hover { transform: scale(1.04); }
 .photo-item img { width: 100%; height: 100%; object-fit: cover; }
 
+/* ===== MENU PUBLIC ===== */
+.menu-section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--neon-purple);
+  border-bottom: 1px solid rgba(191,0,255,0.2);
+  padding-bottom: 0.6rem;
+  margin: 2rem 0 1.2rem;
+}
+.menu-grid-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.menu-card {
+  background: var(--dark-card);
+  border: 1px solid rgba(0,245,255,0.08);
+  border-radius: 12px;
+  padding: 1.3rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  pointer-events: none;
+  user-select: none;
+  transition: border-color 0.3s;
+}
+.menu-card-emoji { font-size: 2.4rem; line-height: 1; }
+.menu-card-nom { font-size: 0.9rem; font-weight: 700; color: var(--text-light); }
+.menu-card-prix {
+  font-size: 0.85rem;
+  color: var(--neon-cyan);
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: rgba(0,245,255,0.07);
+  border: 1px solid rgba(0,245,255,0.18);
+  border-radius: 20px;
+  padding: 2px 10px;
+  margin-top: 0.2rem;
+}
+.menu-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
 /* ===== MODALS ===== */
 .modal-overlay {
   display: none;
@@ -721,6 +773,7 @@ body::before {
   <ul class="nav-links">
     <li><a onclick="showPage('home')" id="nav-home" class="active">Accueil</a></li>
     <li><a onclick="showPage('soirees')" id="nav-soirees">Soirées</a></li>
+    <li><a onclick="showPage('menu')" id="nav-menu">Menu</a></li>
     <li><a onclick="showPage('galerie')" id="nav-galerie">Galerie</a></li>
     <li><a onclick="showPage('contact')" id="nav-contact">Contact</a></li>
   </ul>
@@ -761,6 +814,17 @@ body::before {
     <h2 class="section-title">🎉 Nos Soirées</h2>
     <div class="annonces-grid" id="soirees-public">
       <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== MENU PUBLIC ============================== -->
+<div id="page-menu" class="page">
+  <div class="section">
+    <h2 class="section-title">🍹 Notre Menu</h2>
+    <div class="menu-filter-bar" id="menu-categories"></div>
+    <div id="menu-grid">
+      <div class="loading"><div class="spinner"></div> Chargement...</div>
     </div>
   </div>
 </div>
@@ -1196,6 +1260,7 @@ let paymentMethod = 'especes';
 let produits = [];
 let currentProduitCat = 'all';
 let manageSoireeId = null;
+let currentMenuCat = 'all';
 
 // ============================================================
 // NAVIGATION
@@ -1208,6 +1273,7 @@ function showPage(page) {
   if (navEl) navEl.classList.add('active');
   if (page === 'home') loadPublicAnnonces();
   if (page === 'soirees') loadPublicSoirees();
+  if (page === 'menu') loadPublicMenu('all');
   if (page === 'galerie') loadPublicAlbums();
 }
 
@@ -1233,7 +1299,7 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 });
 
 // ============================================================
-// AUTH — mot de passe en clair, comparaison directe
+// AUTH
 // ============================================================
 async function doLogin() {
   const username = document.getElementById('login-username').value.trim();
@@ -1929,7 +1995,6 @@ async function loadRapport(soireeId) {
   const totalEntrees = entrees.filter(e => e.type_entree !== 'refusee').length;
   const totalMinutes = services.reduce((s, sv) => s + (sv.duree_minutes || 0), 0);
 
-  // Regrouper ventes par produit
   const byProd = {};
   ventes.forEach(v => {
     const key = v.produit_id;
@@ -1977,6 +2042,63 @@ async function loadRapport(soireeId) {
         ).join('') || '<p style="color:var(--text-dim);font-size:0.85rem">Aucune vente</p>'}
       </div>
     </div>`;
+}
+
+// ============================================================
+// PUBLIC: MENU
+// ============================================================
+const catLabels = {
+  all: '🍹 Tous',
+  cocktail: '🍹 Cocktails',
+  biere: '🍺 Bières',
+  shot: '🥃 Shots',
+  soft: '🥤 Softs',
+  bouteille: '🍾 Bouteilles',
+  autre: '📦 Autre'
+};
+
+async function loadPublicMenu(filterCat) {
+  if (filterCat !== undefined) currentMenuCat = filterCat;
+
+  const { data } = await db.from('produits_tropical').select('*').eq('is_active', true).order('categorie');
+  const allProduits = data || [];
+
+  if (!allProduits.length) {
+    document.getElementById('menu-categories').innerHTML = '';
+    document.getElementById('menu-grid').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🍹</div>
+        <div class="empty-state-text">Le menu est en cours de préparation…</div>
+      </div>`;
+    return;
+  }
+
+  const cats = ['all', ...new Set(allProduits.map(p => p.categorie))];
+
+  document.getElementById('menu-categories').innerHTML = cats.map(c =>
+    `<button class="cat-btn ${c === currentMenuCat ? 'active' : ''}" onclick="loadPublicMenu('${c}')">
+      ${catLabels[c] || c}
+    </button>`
+  ).join('');
+
+  const filtered = currentMenuCat === 'all' ? allProduits : allProduits.filter(p => p.categorie === currentMenuCat);
+
+  const grouped = {};
+  filtered.forEach(p => {
+    if (!grouped[p.categorie]) grouped[p.categorie] = [];
+    grouped[p.categorie].push(p);
+  });
+
+  document.getElementById('menu-grid').innerHTML = Object.entries(grouped).map(([cat, items]) => `
+    <div class="menu-section-title">${catLabels[cat] || cat}</div>
+    <div class="menu-grid-items">
+      ${items.map(p => `
+        <div class="menu-card">
+          <div class="menu-card-emoji">${p.emoji}</div>
+          <div class="menu-card-nom">${p.nom}</div>
+          <div class="menu-card-prix">${parseFloat(p.prix).toFixed(2)} €</div>
+        </div>`).join('')}
+    </div>`).join('');
 }
 
 // ============================================================
@@ -2070,10 +2192,8 @@ function fmtDuration(ms) {
 function typeEmoji(t) { return t==='soiree'?'🎉':t==='promo'?'💥':t==='urgent'?'🚨':'ℹ️'; }
 function esc(str) { return (str||'').replace(/'/g,"\\'"); }
 
-// Enter key pour login
 document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-// Init
 loadPublicAnnonces();
 </script>
 </body>
