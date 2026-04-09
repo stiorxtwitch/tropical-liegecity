@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tropical Heights RP — Le Bar</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<style>
+:root {
+  --neon-pink: #ff1493;
+  --neon-cyan: #00f5ff;
+  --neon-purple: #bf00ff;
+  --neon-orange: #ff6b35;
+  --sunset-orange: #ff8c42;
+  --sunset-pink: #e91e8c;
+  --dark-bg: #050510;
+  --dark-card: #0a0a1a;
+  --dark-panel: #0d0d20;
+  --text-light: #e8e8ff;
+  --text-dim: #8888aa;
+  --gradient-tropical: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan));
+  --gradient-sunset: linear-gradient(135deg, var(--sunset-orange), var(--sunset-pink), var(--neon-purple));
+  --glow-pink: 0 0 20px rgba(255,20,147,0.6), 0 0 40px rgba(255,20,147,0.3);
+  --glow-cyan: 0 0 20px rgba(0,245,255,0.6), 0 0 40px rgba(0,245,255,0.3);
+  --border-neon: 1px solid rgba(0,245,255,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--dark-bg);
+  color: var(--text-light);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* GRID BG */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* =================== NAVBAR =================== */
+#navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(5,5,16,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,245,255,0.2);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.nav-logo-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 900;
+  background: var(--gradient-tropical);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 0.2rem;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.nav-links a:hover, .nav-links a.active {
+  color: var(--neon-cyan);
+  background: rgba(0,245,255,0.08);
+  text-shadow: var(--glow-cyan);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#login-btn {
+  background: transparent;
+  border: 1px solid var(--neon-pink);
+  color: var(--neon-pink);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#login-btn:hover {
+  background: var(--neon-pink);
+  color: #fff;
+  box-shadow: var(--glow-pink);
+}
+
+/* =================== MAIN PAGES =================== */
+.page { display: none; padding-top: 70px; min-height: 100vh; position: relative; z-index: 1; }
+.page.active { display: block; }
+
+/* =================== HERO =================== */
+#page-home {
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,20,147,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 50%, rgba(0,245,255,0.08) 0%, transparent 50%);
+}
+
+.hero {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+}
+
+.hero-logo {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 0 30px rgba(255,20,147,0.5));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 900;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 4px;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  text-shadow: none;
+  animation: pulse-text 4s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 3rem;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--gradient-tropical);
+  color: #000;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: var(--glow-pink);
+}
+.btn-primary:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--neon-cyan);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: 1px solid var(--neon-cyan);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-outline:hover { background: rgba(0,245,255,0.1); box-shadow: var(--glow-cyan); transform: translateY(-2px); }
+
+/* NEXT EVENT BANNER */
+.next-event-banner {
+  margin-top: 4rem;
+  background: rgba(10,10,26,0.9);
+  border: 1px solid rgba(255,20,147,0.3);
+  border-radius: 12px;
+  padding: 2rem 3rem;
+  max-width: 700px;
+  width: 100%;
+  backdrop-filter: blur(10px);
+}
+.neb-label {
+  font-size: 0.7rem;
+  letter-spacing: 4px;
+  color: var(--neon-pink);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.neb-title { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: #fff; margin-bottom: 0.5rem; }
+.neb-date { color: var(--neon-cyan); font-size: 1rem; letter-spacing: 2px; }
+
+/* =================== SECTION STYLES =================== */
+.section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  background: var(--gradient-tropical);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 3px;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+/* =================== ANNONCES =================== */
+.annonces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.annonce-card {
+  background: var(--dark-card);
+  border: 1px solid rgba(0,245,255,0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.annonce-card:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 30px rgba(0,245,255,0.1);
+  transform: translateY(-4px);
+}
+.annonce-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background: linear-gradient(135deg, #1a0030, #003040);
+}
+.annonce-img-placeholder {
+  width: 100%;
+  height: 200px;
+  background: var(--gradient-sunset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+.annonce-body { padding: 1.5rem; }
+.annonce-type {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--neon-pink);
+  margin-bottom: 0.5rem;
+}
+.annonce-title { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+.annonce-text { color: var(--text-dim); font-size: 0.9rem; line-height: 1.5; }
+.annonce-date { color: var(--neon-cyan); font-size: 0.8rem; margin-top: 1rem; letter-spacing: 1px; }
+
+/* =================== ALBUMS / GALERIE =================== */
+.albums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+.album-card {
+  background: var(--dark-card);
+  border: 1px solid rgba(191,0,255,0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.album-card:hover { border-color: var(--neon-purple); box-shadow: 0 0 30px rgba(191,0,255,0.15); transform: translateY(-4px); }
+.album-cover {
+  height: 160px;
+  background: linear-gradient(135deg, #1a003a, #003a4a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.album-cover img { width: 100%; height: 100%; object-fit: cover; }
+.album-info { padding: 1rem 1.5rem; }
+.album-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.3rem; }
+.album-count { color: var(--text-dim); font-size: 0.85rem; }
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.photo-item {
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--dark-card);
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.photo-item:hover { transform: scale(1.03); }
+.photo-item img { width: 100%; height: 100%; object-fit: cover; }
+
+/* =================== MODAL =================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--dark-panel);
+  border: 1px solid rgba(0,245,255,0.2);
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-lg { max-width: 800px; }
+.modal-close {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: var(--neon-pink); }
+.modal-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  background: var(--gradient-tropical);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* FORM ELEMENTS */
+.form-group { margin-bottom: 1.2rem; }
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(0,245,255,0.2);
+  border-radius: 6px;
+  color: var(--text-light);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  padding: 12px 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0,245,255,0.1);
+}
+.form-select option { background: #0a0a1a; }
+.form-textarea { min-height: 100px; resize: vertical; }
+
+.btn-full { width: 100%; }
+.btn-sm { padding: 8px 16px; font-size: 0.8rem; }
+.btn-danger {
+  background: transparent;
+  color: var(--neon-pink);
+  border: 1px solid var(--neon-pink);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-danger:hover { background: var(--neon-pink); color: #fff; }
+
+/* =================== TOAST =================== */
+#toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.toast {
+  background: var(--dark-panel);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  animation: slideIn 0.3s ease;
+  max-width: 300px;
+}
+.toast.success { border-left: 3px solid var(--neon-cyan); color: var(--neon-cyan); }
+.toast.error { border-left: 3px solid var(--neon-pink); color: var(--neon-pink); }
+.toast.info { border-left: 3px solid var(--neon-purple); color: var(--neon-purple); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* =================== DASHBOARD =================== */
+#page-dashboard { background: radial-gradient(ellipse at 20% 20%, rgba(0,245,255,0.05) 0%, transparent 50%); }
+
+.dashboard-header {
+  background: rgba(10,10,26,0.95);
+  border-bottom: 1px solid rgba(0,245,255,0.15);
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.dashboard-welcome { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--neon-cyan); }
+.dashboard-role {
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.dashboard-content { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(0,245,255,0.15);
+  padding-bottom: 0;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--text-light); }
+.tab-btn.active { color: var(--neon-cyan); border-bottom-color: var(--neon-cyan); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--dark-card);
+  border: 1px solid rgba(0,245,255,0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+.stat-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  background: var(--gradient-tropical);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-label { color: var(--text-dim); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 0.5rem; }
+
+/* SOIREE CARDS */
+.soirees-list { display: flex; flex-direction: column; gap: 1rem; }
+.soiree-card {
+  background: var(--dark-card);
+  border: 1px solid rgba(0,245,255,0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.soiree-card:hover { border-color: rgba(0,245,255,0.4); }
+.soiree-date-badge {
+  background: var(--gradient-tropical);
+  color: #000;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+.sdb-day { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 900; line-height: 1; }
+.sdb-month { font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.soiree-info { flex: 1; }
+.soiree-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem; }
+.soiree-meta { color: var(--text-dim); font-size: 0.85rem; }
+.soiree-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.status-planifiee { background: rgba(0,245,255,0.1); color: var(--neon-cyan); border: 1px solid rgba(0,245,255,0.3); }
+.status-en_cours { background: rgba(0,255,100,0.1); color: #00ff64; border: 1px solid rgba(0,255,100,0.3); animation: blink 1s infinite; }
+.status-terminee { background: rgba(136,136,170,0.1); color: var(--text-dim); border: 1px solid rgba(136,136,170,0.3); }
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+.soiree-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* SERVICE TIMER */
+.service-panel {
+  background: var(--dark-card);
+  border: 1px solid rgba(0,245,255,0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.service-timer {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
+  letter-spacing: 4px;
+  margin: 1rem 0;
+}
+.service-status { color: var(--text-dim); font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 1.5rem; }
+
+/* COUNTER SECURITE */
+.counter-panel {
+  background: var(--dark-card);
+  border: 1px solid rgba(255,20,147,0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.counter-display {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 5rem;
+  font-weight: 900;
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin: 1rem 0;
+}
+.counter-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+.counter-btn {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+}
+.counter-btn.plus { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+.counter-btn.plus:hover { background: var(--neon-cyan); color: #000; box-shadow: var(--glow-cyan); }
+.counter-btn.minus { border-color: var(--neon-pink); color: var(--neon-pink); }
+.counter-btn.minus:hover { background: var(--neon-pink); color: #fff; box-shadow: var(--glow-pink); }
+.counter-btn.vip { border-color: var(--neon-purple); color: var(--neon-purple); font-size: 0.7rem; width: 80px; height: 80px; border-radius: 8px; }
+.counter-btn.vip:hover { background: var(--neon-purple); color: #fff; }
+
+/* CAISSE BARMAN */
+.caisse-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+}
+@media (max-width: 900px) { .caisse-grid { grid-template-columns: 1fr; } }
+.produits-panel {
+  background: var(--dark-card);
+  border: 1px solid rgba(0,245,255,0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+.produit-categories {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.cat-btn {
+  background: transparent;
+  border: 1px solid rgba(0,245,255,0.2);
+  color: var(--text-dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cat-btn.active, .cat-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,245,255,0.08); }
+.produits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.8rem;
+}
+.produit-btn {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(0,245,255,0.1);
+  border-radius: 10px;
+  padding: 1rem 0.8rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-light);
+  font-family: 'Rajdhani', sans-serif;
+}
+.produit-btn:hover { border-color: var(--neon-cyan); background: rgba(0,245,255,0.08); transform: scale(1.03); }
+.produit-emoji { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
+.produit-nom { font-size: 0.8rem; font-weight: 700; display: block; }
+.produit-prix { font-size: 0.75rem; color: var(--neon-cyan); display: block; margin-top: 0.2rem; }
+
+/* TICKET CAISSE */
+.ticket-panel {
+  background: var(--dark-card);
+  border: 1px solid rgba(255,20,147,0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.ticket-header {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  color: var(--neon-pink);
+  text-align: center;
+  letter-spacing: 3px;
+  border-bottom: 1px dashed rgba(255,20,147,0.3);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+.ticket-items { flex: 1; min-height: 200px; }
+.ticket-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.9rem;
+}
+.ticket-item-remove {
+  background: none; border: none; color: var(--neon-pink); cursor: pointer; font-size: 1rem;
+}
+.ticket-total {
+  border-top: 1px solid rgba(0,245,255,0.3);
+  padding-top: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ticket-total-label { font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+.ticket-total-amount { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; color: var(--neon-cyan); }
+.payment-btns { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.payment-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(0,245,255,0.3);
+  color: var(--text-dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.payment-btn.selected { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,245,255,0.08); }
+.payment-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+/* RAPPORT */
+.rapport-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.rapport-card {
+  background: var(--dark-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(0,245,255,0.1);
+}
+.rapport-value { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 900; }
+.rapport-label { color: var(--text-dim); font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; }
+.rapport-ca { color: var(--neon-cyan); }
+.rapport-entrees { color: var(--neon-pink); }
+.rapport-ventes { color: var(--neon-purple); }
+.rapport-duree { color: var(--sunset-orange); }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(0,245,255,0.15);
+}
+.data-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.9rem;
+}
+.data-table tr:hover td { background: rgba(0,245,255,0.03); }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-dim);
+}
+.empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
+.empty-state-text { font-size: 1.1rem; }
+
+/* =================== ASSIGN WORKERS =================== */
+.worker-list { display: flex; flex-direction: column; gap: 0.8rem; max-height: 300px; overflow-y: auto; }
+.worker-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(0,245,255,0.1);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+}
+.worker-check { accent-color: var(--neon-cyan); width: 18px; height: 18px; }
+.worker-name { flex: 1; font-weight: 600; }
+
+/* =================== LOADING =================== */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+}
+.spinner {
+  width: 30px; height: 30px;
+  border: 2px solid rgba(0,245,255,0.2);
+  border-top-color: var(--neon-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,245,255,0.3); border-radius: 3px; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hero-title { font-size: 2rem; }
+  .dashboard-header { padding: 1rem; }
+}
+
+/* USER BADGE */
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(0,245,255,0.08);
+  border: 1px solid rgba(0,245,255,0.2);
+  border-radius: 8px;
+  padding: 6px 14px;
+}
+.ub-name { font-weight: 700; font-size: 0.9rem; }
+.ub-role {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.role-patron { color: var(--neon-pink); }
+.role-securite { color: var(--neon-cyan); }
+.role-barman { color: var(--neon-purple); }
+
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: color 0.2s;
+}
+.logout-btn:hover { color: var(--neon-pink); }
+
+/* SOIREE SELECTOR */
+.soiree-selector {
+  background: var(--dark-card);
+  border: 1px solid rgba(0,245,255,0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.soiree-selector-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+/* HISTORY TABLE */
+.history-entry {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.9rem;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a class="nav-logo" onclick="showPage('home')">
+    <span class="nav-logo-text">🌴 TROPICAL HEIGHTS</span>
+  </a>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home" class="active">Accueil</a></li>
+    <li><a onclick="showPage('soirees')" id="nav-soirees">Soirées</a></li>
+    <li><a onclick="showPage('galerie')" id="nav-galerie">Galerie</a></li>
+    <li><a onclick="showPage('contact')" id="nav-contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <button id="login-btn" onclick="openLoginModal()">🔑 Staff</button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- ======================== PAGE: HOME ======================== -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div style="font-size:7rem;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 30px rgba(255,20,147,0.5))">🌴</div>
+    <h1 class="hero-title">TROPICAL HEIGHTS</h1>
+    <p class="hero-subtitle">Le Bar ✦ FiveM Roleplay</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="showPage('soirees')">🎉 Voir les Soirées</button>
+      <button class="btn-outline" onclick="showPage('galerie')">📸 Galerie Photos</button>
+    </div>
+    <div class="next-event-banner" id="hero-next-event">
+      <div class="neb-label">✦ Prochain événement</div>
+      <div class="neb-title" id="hero-event-title">Chargement...</div>
+      <div class="neb-date" id="hero-event-date">—</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">📣 Annonces</h2>
+    <div class="annonces-grid" id="annonces-public">
+      <div class="loading"><div class="spinner"></div> Chargement...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: SOIREES ======================== -->
+<div id="page-soirees" class="page">
+  <div class="section">
+    <h2 class="section-title">🎉 Nos Soirées</h2>
+    <div class="annonces-grid" id="soirees-public">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: GALERIE ======================== -->
+<div id="page-galerie" class="page">
+  <div class="section">
+    <h2 class="section-title">📸 Galerie Photos</h2>
+    <div id="galerie-albums-view">
+      <div class="albums-grid" id="albums-public">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <div id="galerie-photos-view" style="display:none">
+      <button class="btn-outline btn-sm" onclick="showAlbumsView()" style="margin-bottom:1.5rem">← Retour aux albums</button>
+      <h3 id="album-current-name" style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;color:var(--neon-cyan)"></h3>
+      <div class="photos-grid" id="photos-public"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: CONTACT ======================== -->
+<div id="page-contact" class="page">
+  <div class="section" style="max-width:600px">
+    <h2 class="section-title">📞 Contact</h2>
+    <div style="background:var(--dark-card);border:1px solid rgba(0,245,255,0.15);border-radius:16px;padding:2.5rem;text-align:center">
+      <div style="font-size:4rem;margin-bottom:1rem">🌴</div>
+      <h3 style="font-size:1.5rem;font-weight:700;margin-bottom:1rem">Tropical Heights RP</h3>
+      <p style="color:var(--text-dim);margin-bottom:2rem;line-height:1.7">Pour nous rejoindre, poser une question ou signaler un problème, rejoins notre serveur Discord !</p>
+      <a href="#" class="btn-primary" style="display:inline-block;text-decoration:none;margin-bottom:1rem">
+        💬 Rejoindre le Discord
+      </a>
+      <p style="color:var(--text-dim);font-size:0.85rem;margin-top:1rem">📍 Serveur FiveM : Tropical Heights RP</p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: DASHBOARD ======================== -->
+<div id="page-dashboard" class="page">
+  <div class="dashboard-header">
+    <div>
+      <div class="dashboard-welcome" id="dash-welcome">Bienvenue !</div>
+      <div class="dashboard-role" id="dash-role"></div>
+    </div>
+    <div style="display:flex;gap:1rem;align-items:center">
+      <div class="user-badge">
+        <div>
+          <div class="ub-name" id="ub-name"></div>
+          <div class="ub-role" id="ub-role"></div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Déconnexion">⏏</button>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- TABS selon role -->
+    <div class="tabs" id="dashboard-tabs"></div>
+
+    <!-- TAB: SERVICE -->
+    <div id="tab-service" class="tab-content">
+      <div class="soiree-selector">
+        <div class="soiree-selector-label">Soirée en cours</div>
+        <select class="form-select" id="service-soiree-select" onchange="selectServiceSoiree(this.value)">
+          <option value="">— Sélectionner une soirée —</option>
+        </select>
+      </div>
+      <div class="service-panel">
+        <div style="font-size:0.8rem;letter-spacing:3px;text-transform:uppercase;color:var(--text-dim)">Temps de service</div>
+        <div class="service-timer" id="service-timer">00:00:00</div>
+        <div class="service-status" id="service-status">Aucun service actif</div>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+          <button class="btn-primary" id="btn-prise" onclick="priseDeService()">▶ Prise de service</button>
+          <button class="btn-danger" id="btn-fin" onclick="finDeService()" style="display:none">⏹ Fin de service</button>
+        </div>
+      </div>
+      <h3 style="font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--neon-cyan);margin-bottom:1rem;letter-spacing:2px">HISTORIQUE DES SERVICES</h3>
+      <div id="service-history"></div>
+    </div>
+
+    <!-- TAB: SECURITE -->
+    <div id="tab-securite" class="tab-content">
+      <div class="soiree-selector">
+        <div class="soiree-selector-label">Soirée</div>
+        <select class="form-select" id="secu-soiree-select" onchange="selectSecuSoiree(this.value)">
+          <option value="">— Sélectionner une soirée —</option>
+        </select>
+      </div>
+      <div class="counter-panel">
+        <div style="font-size:0.8rem;letter-spacing:3px;text-transform:uppercase;color:var(--neon-pink)">Entrées totales</div>
+        <div class="counter-display" id="counter-entrees">0</div>
+        <div style="color:var(--text-dim);font-size:0.85rem">
+          <span>VIP: <strong style="color:var(--neon-purple)" id="counter-vip">0</strong></span>
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          <span>Refusées: <strong style="color:var(--neon-pink)" id="counter-refuses">0</strong></span>
+        </div>
+        <div class="counter-buttons">
+          <button class="counter-btn minus" onclick="addEntree('refusee')">✖</button>
+          <button class="counter-btn plus" onclick="addEntree('normale')">+</button>
+          <button class="counter-btn vip" onclick="addEntree('vip')">VIP</button>
+        </div>
+        <div style="margin-top:1rem;color:var(--text-dim);font-size:0.8rem">✖ Refusée &nbsp;|&nbsp; + Normale &nbsp;|&nbsp; VIP</div>
+      </div>
+      <h3 style="font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--neon-cyan);margin-bottom:1rem;letter-spacing:2px">DERNIÈRES ENTRÉES</h3>
+      <div id="entrees-history"></div>
+    </div>
+
+    <!-- TAB: CAISSE -->
+    <div id="tab-caisse" class="tab-content">
+      <div class="soiree-selector">
+        <div class="soiree-selector-label">Soirée</div>
+        <select class="form-select" id="caisse-soiree-select" onchange="selectCaisseSoiree(this.value)">
+          <option value="">— Sélectionner une soirée —</option>
+        </select>
+      </div>
+      <div class="caisse-grid">
+        <div class="produits-panel">
+          <div class="produit-categories" id="produit-categories"></div>
+          <div class="produits-list" id="produits-list"></div>
+        </div>
+        <div class="ticket-panel">
+          <div class="ticket-header">🧾 TICKET EN COURS</div>
+          <div class="ticket-items" id="ticket-items">
+            <div class="empty-state" style="padding:2rem">
+              <div style="font-size:2rem">🧾</div>
+              <div style="font-size:0.9rem;margin-top:0.5rem">Ticket vide</div>
+            </div>
+          </div>
+          <div class="ticket-total">
+            <div class="ticket-total-label">Total</div>
+            <div class="ticket-total-amount" id="ticket-total">0.00 €</div>
+          </div>
+          <div class="payment-btns">
+            <button class="payment-btn selected" id="pay-especes" onclick="selectPayment('especes')">💵 Espèces</button>
+            <button class="payment-btn" id="pay-carte" onclick="selectPayment('carte')">💳 Carte</button>
+            <button class="payment-btn" id="pay-offert" onclick="selectPayment('offert')">🎁 Offert</button>
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-top:1rem">
+            <button class="btn-danger btn-sm" onclick="clearTicket()" style="flex:1">✖ Vider</button>
+            <button class="btn-primary btn-sm" onclick="validerVente()" style="flex:2">✓ VALIDER</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SOIREES PATRON -->
+    <div id="tab-soirees" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <h3 style="font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--neon-cyan);letter-spacing:2px">GESTION DES SOIRÉES</h3>
+        <button class="btn-primary btn-sm" onclick="openCreateSoireeModal()">+ Créer une soirée</button>
+      </div>
+      <div class="soirees-list" id="soirees-admin"></div>
+    </div>
+
+    <!-- TAB: RAPPORT -->
+    <div id="tab-rapport" class="tab-content">
+      <div class="soiree-selector">
+        <div class="soiree-selector-label">Soirée à analyser</div>
+        <select class="form-select" id="rapport-soiree-select" onchange="loadRapport(this.value)">
+          <option value="">— Sélectionner une soirée —</option>
+        </select>
+      </div>
+      <div id="rapport-content">
+        <div class="empty-state">
+          <div class="empty-state-icon">📊</div>
+          <div class="empty-state-text">Sélectionnez une soirée pour voir le rapport</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: EQUIPE -->
+    <div id="tab-equipe" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <h3 style="font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--neon-cyan);letter-spacing:2px">GESTION DE L'ÉQUIPE</h3>
+        <button class="btn-primary btn-sm" onclick="openCreateEmployeeModal()">+ Ajouter un employé</button>
+      </div>
+      <div id="equipe-list"></div>
+    </div>
+
+    <!-- TAB: ANNONCES ADMIN -->
+    <div id="tab-annonces" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <h3 style="font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--neon-cyan);letter-spacing:2px">ANNONCES & PROMOTIONS</h3>
+        <button class="btn-primary btn-sm" onclick="openCreateAnnonceModal()">+ Créer une annonce</button>
+      </div>
+      <div id="annonces-admin-list"></div>
+    </div>
+
+    <!-- TAB: PRODUITS -->
+    <div id="tab-produits" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <h3 style="font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--neon-cyan);letter-spacing:2px">CARTE DES PRODUITS</h3>
+        <button class="btn-primary btn-sm" onclick="openCreateProduitModal()">+ Ajouter un produit</button>
+      </div>
+      <div id="produits-admin-list"></div>
+    </div>
+
+    <!-- TAB: ALBUMS ADMIN -->
+    <div id="tab-albums" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <h3 style="font-family:'Orbitron',sans-serif;font-size:1rem;color:var(--neon-cyan);letter-spacing:2px">GESTION DES ALBUMS</h3>
+        <button class="btn-primary btn-sm" onclick="openCreateAlbumModal()">+ Créer un album</button>
+      </div>
+      <div id="albums-admin-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== MODALS ======================== -->
+
+<!-- LOGIN -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-login')">✕</button>
+    <div class="modal-title">🔑 Connexion Staff</div>
+    <div class="form-group">
+      <label class="form-label">Nom d'utilisateur</label>
+      <input class="form-input" id="login-username" placeholder="Ex: JohnDoe" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <input class="form-input" id="login-password" type="password" placeholder="••••••••">
+    </div>
+    <button class="btn-primary btn-full" onclick="doLogin()">Connexion</button>
+    <p style="color:var(--text-dim);font-size:0.8rem;text-align:center;margin-top:1rem">Accès réservé au personnel de Tropical Heights</p>
+  </div>
+</div>
+
+<!-- CREATE SOIREE -->
+<div class="modal-overlay" id="modal-create-soiree">
+  <div class="modal modal-lg">
+    <button class="modal-close" onclick="closeModal('modal-create-soiree')">✕</button>
+    <div class="modal-title">🎉 Créer une Soirée</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="form-group">
+        <label class="form-label">Nom de la soirée</label>
+        <input class="form-input" id="cs-nom" placeholder="Ex: Nuit Tropicale">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" id="cs-date" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure de début</label>
+        <input class="form-input" id="cs-heure" type="time" value="22:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prix d'entrée (€)</label>
+        <input class="form-input" id="cs-prix" type="number" step="0.5" value="0" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="cs-desc" placeholder="Description de la soirée..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Assigner des employés</label>
+      <div class="worker-list" id="cs-workers"></div>
+    </div>
+    <button class="btn-primary btn-full" onclick="createSoiree()">✓ Créer la soirée</button>
+  </div>
+</div>
+
+<!-- CREATE EMPLOYEE -->
+<div class="modal-overlay" id="modal-create-employee">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-create-employee')">✕</button>
+    <div class="modal-title">👤 Ajouter un Employé</div>
+    <div class="form-group">
+      <label class="form-label">Nom d'utilisateur</label>
+      <input class="form-input" id="emp-username" placeholder="Ex: JohnDoe">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <input class="form-input" id="emp-password" type="password" placeholder="Minimum 6 caractères">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Rôle</label>
+      <select class="form-select" id="emp-role">
+        <option value="barman">Barman</option>
+        <option value="securite">Sécurité</option>
+        <option value="patron">Patron</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Discord ID (optionnel)</label>
+      <input class="form-input" id="emp-discord" placeholder="Ex: 123456789">
+    </div>
+    <button class="btn-primary btn-full" onclick="createEmployee()">✓ Créer l'employé</button>
+  </div>
+</div>
+
+<!-- CREATE ANNONCE -->
+<div class="modal-overlay" id="modal-create-annonce">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-create-annonce')">✕</button>
+    <div class="modal-title">📣 Créer une Annonce</div>
+    <div class="form-group">
+      <label class="form-label">Titre</label>
+      <input class="form-input" id="ann-titre" placeholder="Titre de l'annonce">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="ann-type">
+        <option value="soiree">🎉 Soirée</option>
+        <option value="promo">💥 Promo</option>
+        <option value="info">ℹ️ Info</option>
+        <option value="urgent">🚨 Urgent</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date de l'événement</label>
+      <input class="form-input" id="ann-date" type="datetime-local">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contenu</label>
+      <textarea class="form-textarea" id="ann-contenu" placeholder="Décrivez l'événement..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">URL Image (optionnel)</label>
+      <input class="form-input" id="ann-image" placeholder="https://...">
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:1rem">
+      <input type="checkbox" id="ann-published" style="accent-color:var(--neon-cyan);width:18px;height:18px">
+      <label for="ann-published" style="color:var(--text-dim)">Publier immédiatement</label>
+    </div>
+    <button class="btn-primary btn-full" onclick="createAnnonce()">✓ Créer l'annonce</button>
+  </div>
+</div>
+
+<!-- CREATE PRODUIT -->
+<div class="modal-overlay" id="modal-create-produit">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-create-produit')">✕</button>
+    <div class="modal-title">🍹 Ajouter un Produit</div>
+    <div class="form-group">
+      <label class="form-label">Nom du produit</label>
+      <input class="form-input" id="prod-nom" placeholder="Ex: Mojito Tropical">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="prod-cat">
+        <option value="cocktail">🍹 Cocktail</option>
+        <option value="biere">🍺 Bière</option>
+        <option value="shot">🥃 Shot</option>
+        <option value="soft">🥤 Soft</option>
+        <option value="bouteille">🍾 Bouteille</option>
+        <option value="autre">📦 Autre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Prix (€)</label>
+      <input class="form-input" id="prod-prix" type="number" step="0.50" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Emoji</label>
+      <input class="form-input" id="prod-emoji" placeholder="🍹" maxlength="4">
+    </div>
+    <button class="btn-primary btn-full" onclick="createProduit()">✓ Ajouter</button>
+  </div>
+</div>
+
+<!-- CREATE ALBUM -->
+<div class="modal-overlay" id="modal-create-album">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-create-album')">✕</button>
+    <div class="modal-title">📸 Créer un Album</div>
+    <div class="form-group">
+      <label class="form-label">Nom de l'album</label>
+      <input class="form-input" id="alb-nom" placeholder="Ex: Soirée du 15 Juillet">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Soirée liée (optionnel)</label>
+      <select class="form-select" id="alb-soiree">
+        <option value="">— Aucune —</option>
+      </select>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:1rem">
+      <input type="checkbox" id="alb-public" checked style="accent-color:var(--neon-cyan);width:18px;height:18px">
+      <label for="alb-public" style="color:var(--text-dim)">Album public</label>
+    </div>
+    <button class="btn-primary btn-full" onclick="createAlbum()">✓ Créer l'album</button>
+  </div>
+</div>
+
+<!-- ADD PHOTO -->
+<div class="modal-overlay" id="modal-add-photo">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-add-photo')">✕</button>
+    <div class="modal-title">🖼 Ajouter une Photo</div>
+    <div class="form-group">
+      <label class="form-label">Album</label>
+      <select class="form-select" id="photo-album-select"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">URL de l'image</label>
+      <input class="form-input" id="photo-url" placeholder="https://i.imgur.com/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Légende (optionnel)</label>
+      <input class="form-input" id="photo-caption" placeholder="Description de la photo">
+    </div>
+    <button class="btn-primary btn-full" onclick="addPhoto()">✓ Ajouter</button>
+  </div>
+</div>
+
+<!-- ASSIGN WORKERS TO SOIREE -->
+<div class="modal-overlay" id="modal-assign-workers">
+  <div class="modal modal-lg">
+    <button class="modal-close" onclick="closeModal('modal-assign-workers')">✕</button>
+    <div class="modal-title" id="aw-title">Gérer la soirée</div>
+    <div id="aw-content"></div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// SUPABASE CLIENT
+// ============================================
+const SUPA_URL = 'https://sevrfgivcpefyykuffti.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNldnJmZ2l2Y3BlZnl5a3VmZnRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDI1NTMsImV4cCI6MjA3ODUxODU1M30.YZnkSHsVWKQEhfU7xYfWyTFmtkM28Zuzdu7Y1sjBXQc';
+
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+// ============================================
+// STATE
+// ============================================
+let currentUser = null;
+let currentService = null;
+let serviceTimerInterval = null;
+let caisseSoireeId = null;
+let secuSoireeId = null;
+let ticket = [];
+let paymentMethod = 'especes';
+let produits = [];
+let currentProduitCat = 'all';
+
+// ============================================
+// NAVIGATION
+// ============================================
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+
+  if (page === 'home') loadPublicAnnonces();
+  if (page === 'soirees') loadPublicSoirees();
+  if (page === 'galerie') loadPublicAlbums();
+}
+
+// ============================================
+// TOAST
+// ============================================
+function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ============================================
+// MODALS
+// ============================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openLoginModal() { openModal('modal-login'); }
+
+// ============================================
+// AUTH
+// ============================================
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) { toast('Remplis tous les champs', 'error'); return; }
+
+  try {
+    const { data, error } = await db.from('employees_tropical')
+      .select('*').eq('username', username).eq('is_active', true).single();
+
+    if (error || !data) { toast('Utilisateur introuvable', 'error'); return; }
+
+    const valid = await bcrypt.compare(password, data.password_hash);
+    if (!valid) { toast('Mot de passe incorrect', 'error'); return; }
+
+    currentUser = data;
+    closeModal('modal-login');
+    document.getElementById('login-btn').style.display = 'none';
+    initDashboard();
+    showPage('dashboard');
+    toast(`Bienvenue ${data.username} !`, 'success');
+  } catch(e) {
+    toast('Erreur de connexion', 'error');
+    console.error(e);
+  }
+}
+
+function logout() {
+  currentUser = null;
+  clearInterval(serviceTimerInterval);
+  currentService = null;
+  document.getElementById('login-btn').style.display = '';
+  showPage('home');
+  toast('Déconnecté', 'info');
+}
+
+// ============================================
+// DASHBOARD INIT
+// ============================================
+function initDashboard() {
+  document.getElementById('dash-welcome').textContent = `Bienvenue, ${currentUser.username} !`;
+  document.getElementById('dash-role').textContent = currentUser.role.toUpperCase();
+  document.getElementById('ub-name').textContent = currentUser.username;
+  document.getElementById('ub-role').textContent = currentUser.role;
+  document.getElementById('ub-role').className = `ub-role role-${currentUser.role}`;
+
+  buildTabs();
+  loadSoireesForSelects();
+
+  if (currentUser.role === 'patron') {
+    loadSoireesAdmin();
+    loadEquipe();
+    loadAnnoncesAdmin();
+    loadProduitsAdmin();
+    loadAlbumsAdmin();
+  }
+}
+
+function buildTabs() {
+  const tabs = document.getElementById('dashboard-tabs');
+  tabs.innerHTML = '';
+  const all_tabs = [];
+
+  // Service tab for all
+  all_tabs.push({ id: 'service', label: '⏱ Service', roles: ['patron', 'securite', 'barman'] });
+  all_tabs.push({ id: 'securite', label: '🚪 Entrées', roles: ['patron', 'securite'] });
+  all_tabs.push({ id: 'caisse', label: '🧾 Caisse', roles: ['patron', 'barman'] });
+  all_tabs.push({ id: 'soirees', label: '🎉 Soirées', roles: ['patron'] });
+  all_tabs.push({ id: 'rapport', label: '📊 Rapport', roles: ['patron'] });
+  all_tabs.push({ id: 'equipe', label: '👥 Équipe', roles: ['patron'] });
+  all_tabs.push({ id: 'annonces', label: '📣 Annonces', roles: ['patron'] });
+  all_tabs.push({ id: 'produits', label: '🍹 Produits', roles: ['patron'] });
+  all_tabs.push({ id: 'albums', label: '📸 Albums', roles: ['patron'] });
+
+  let first = true;
+  all_tabs.forEach(t => {
+    if (!t.roles.includes(currentUser.role)) return;
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (first ? ' active' : '');
+    btn.textContent = t.label;
+    btn.onclick = () => switchTab(t.id);
+    tabs.appendChild(btn);
+    if (first) { switchTab(t.id, false); first = false; }
+  });
+}
+
+function switchTab(tabId, updateBtn = true) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  if (updateBtn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event?.target?.classList.add('active');
+  }
+  if (tabId === 'caisse') loadProduitsCaisse();
+}
+
+// ============================================
+// SOIREES SELECTS
+// ============================================
+async function loadSoireesForSelects() {
+  const { data } = await db.from('soirees_tropical').select('*').order('date_soiree', { ascending: false });
+  if (!data) return;
+
+  const selects = ['service-soiree-select', 'secu-soiree-select', 'caisse-soiree-select', 'rapport-soiree-select'];
+  selects.forEach(sid => {
+    const sel = document.getElementById(sid);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Sélectionner une soirée —</option>';
+    data.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = `${s.nom} — ${formatDate(s.date_soiree)}`;
+      sel.appendChild(opt);
+    });
+  });
+  // Also album soiree select
+  const albSel = document.getElementById('alb-soiree');
+  if (albSel) {
+    albSel.innerHTML = '<option value="">— Aucune —</option>';
+    data.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.nom;
+      albSel.appendChild(opt);
+    });
+  }
+}
+
+// ============================================
+// SERVICE TIMER
+// ============================================
+function selectServiceSoiree(val) { /* just store selection */ }
+
+async function priseDeService() {
+  const soireeId = document.getElementById('service-soiree-select').value;
+  if (!soireeId) { toast('Sélectionne une soirée', 'error'); return; }
+
+  const { data, error } = await db.from('services_tropical').insert({
+    employee_id: currentUser.id,
+    soiree_id: soireeId,
+    heure_debut: new Date().toISOString(),
+    statut: 'en_cours'
+  }).select().single();
+
+  if (error) { toast('Erreur lors de la prise de service', 'error'); return; }
+  currentService = data;
+  startServiceTimer();
+  document.getElementById('btn-prise').style.display = 'none';
+  document.getElementById('btn-fin').style.display = '';
+  document.getElementById('service-status').textContent = 'Service en cours ✓';
+  toast('Prise de service enregistrée !', 'success');
+}
+
+function startServiceTimer() {
+  if (!currentService) return;
+  clearInterval(serviceTimerInterval);
+  serviceTimerInterval = setInterval(() => {
+    const start = new Date(currentService.heure_debut);
+    const elapsed = Date.now() - start.getTime();
+    document.getElementById('service-timer').textContent = formatDuration(elapsed);
+  }, 1000);
+}
+
+async function finDeService() {
+  if (!currentService) return;
+  const now = new Date();
+  const start = new Date(currentService.heure_debut);
+  const minutes = Math.round((now - start) / 60000);
+
+  await db.from('services_tropical').update({
+    heure_fin: now.toISOString(),
+    duree_minutes: minutes,
+    statut: 'termine'
+  }).eq('id', currentService.id);
+
+  clearInterval(serviceTimerInterval);
+  currentService = null;
+  document.getElementById('service-timer').textContent = '00:00:00';
+  document.getElementById('service-status').textContent = 'Aucun service actif';
+  document.getElementById('btn-prise').style.display = '';
+  document.getElementById('btn-fin').style.display = 'none';
+  toast(`Service terminé — Durée : ${minutes} min`, 'success');
+  loadServiceHistory();
+}
+
+async function loadServiceHistory() {
+  const { data } = await db.from('services_tropical')
+    .select('*, soirees_tropical(nom)')
+    .eq('employee_id', currentUser.id)
+    .eq('statut', 'termine')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const el = document.getElementById('service-history');
+  if (!data || !data.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div>Pas encore de services</div></div>'; return; }
+
+  el.innerHTML = data.map(s => `
+    <div class="history-entry">
+      <span>${s.soirees_tropical?.nom || '—'} — ${formatDate(s.created_at)}</span>
+      <span style="color:var(--neon-cyan);font-weight:700">${s.duree_minutes} min</span>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// SECURITE - COMPTEUR
+// ============================================
+function selectSecuSoiree(val) {
+  secuSoireeId = val;
+  if (val) loadEntreesCount();
+}
+
+async function addEntree(type) {
+  if (!secuSoireeId) { toast('Sélectionne une soirée d\'abord', 'error'); return; }
+  await db.from('entrees_tropical').insert({
+    soiree_id: secuSoireeId,
+    agent_id: currentUser.id,
+    type_entree: type
+  });
+  loadEntreesCount();
+}
+
+async function loadEntreesCount() {
+  if (!secuSoireeId) return;
+  const { data } = await db.from('entrees_tropical').select('*').eq('soiree_id', secuSoireeId);
+  if (!data) return;
+  const normales = data.filter(e => e.type_entree === 'normale').length;
+  const vip = data.filter(e => e.type_entree === 'vip').length;
+  const refuses = data.filter(e => e.type_entree === 'refusee').length;
+  document.getElementById('counter-entrees').textContent = normales + vip;
+  document.getElementById('counter-vip').textContent = vip;
+  document.getElementById('counter-refuses').textContent = refuses;
+
+  const hist = document.getElementById('entrees-history');
+  const last = [...data].reverse().slice(0, 10);
+  hist.innerHTML = last.map(e => `
+    <div class="history-entry">
+      <span>${typeEntreeLabel(e.type_entree)}</span>
+      <span style="color:var(--text-dim);font-size:0.8rem">${formatTime(e.timestamp)}</span>
+    </div>
+  `).join('') || '<div class="empty-state"><div>Aucune entrée</div></div>';
+}
+
+function typeEntreeLabel(t) {
+  if (t === 'normale') return '✅ Entrée normale';
+  if (t === 'vip') return '⭐ Entrée VIP';
+  return '❌ Refusée';
+}
+
+// ============================================
+// CAISSE BARMAN
+// ============================================
+function selectCaisseSoiree(val) { caisseSoireeId = val; }
+
+async function loadProduitsCaisse() {
+  const { data } = await db.from('produits_tropical').select('*').eq('is_active', true).order('categorie');
+  produits = data || [];
+
+  const cats = ['all', ...new Set(produits.map(p => p.categorie))];
+  const catEl = document.getElementById('produit-categories');
+  catEl.innerHTML = cats.map(c => `
+    <button class="cat-btn ${c === currentProduitCat ? 'active' : ''}" onclick="filterProduits('${c}')">${c === 'all' ? 'Tous' : c}</button>
+  `).join('');
+  renderProduits();
+}
+
+function filterProduits(cat) {
+  currentProduitCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderProduits();
+}
+
+function renderProduits() {
+  const filtered = currentProduitCat === 'all' ? produits : produits.filter(p => p.categorie === currentProduitCat);
+  const el = document.getElementById('produits-list');
+  el.innerHTML = filtered.map(p => `
+    <button class="produit-btn" onclick='addToTicket(${JSON.stringify(p)})'>
+      <span class="produit-emoji">${p.emoji}</span>
+      <span class="produit-nom">${p.nom}</span>
+      <span class="produit-prix">${parseFloat(p.prix).toFixed(2)} €</span>
+    </button>
+  `).join('');
+}
+
+function addToTicket(p) {
+  const existing = ticket.find(t => t.produit_id === p.id);
+  if (existing) { existing.quantite++; }
+  else { ticket.push({ produit_id: p.id, nom: p.nom, emoji: p.emoji, prix: parseFloat(p.prix), quantite: 1 }); }
+  renderTicket();
+}
+
+function renderTicket() {
+  const el = document.getElementById('ticket-items');
+  if (!ticket.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:2rem"><div style="font-size:2rem">🧾</div><div style="font-size:0.9rem;margin-top:0.5rem">Ticket vide</div></div>';
+    document.getElementById('ticket-total').textContent = '0.00 €';
+    return;
+  }
+  el.innerHTML = ticket.map((t, i) => `
+    <div class="ticket-item">
+      <span>${t.emoji} ${t.nom}</span>
+      <span style="display:flex;align-items:center;gap:0.5rem">
+        <span style="color:var(--text-dim)">${t.quantite}x</span>
+        <span style="color:var(--neon-cyan);font-weight:700">${(t.prix * t.quantite).toFixed(2)}€</span>
+        <button class="ticket-item-remove" onclick="removeFromTicket(${i})">✕</button>
+      </span>
+    </div>
+  `).join('');
+  const total = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  document.getElementById('ticket-total').textContent = total.toFixed(2) + ' €';
+}
+
+function removeFromTicket(i) { ticket.splice(i, 1); renderTicket(); }
+function clearTicket() { ticket = []; renderTicket(); }
+
+function selectPayment(m) {
+  paymentMethod = m;
+  document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('pay-' + m).classList.add('selected');
+}
+
+async function validerVente() {
+  if (!caisseSoireeId) { toast('Sélectionne une soirée', 'error'); return; }
+  if (!ticket.length) { toast('Le ticket est vide', 'error'); return; }
+
+  const inserts = ticket.map(t => ({
+    soiree_id: caisseSoireeId,
+    barman_id: currentUser.id,
+    produit_id: t.produit_id,
+    quantite: t.quantite,
+    prix_unitaire: t.prix,
+    methode_paiement: paymentMethod
+  }));
+
+  const { error } = await db.from('ventes_tropical').insert(inserts);
+  if (error) { toast('Erreur lors de la vente', 'error'); return; }
+
+  const total = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  toast(`Vente validée ! Total : ${total.toFixed(2)} € (${paymentMethod})`, 'success');
+  clearTicket();
+}
+
+// ============================================
+// PATRON: SOIREES
+// ============================================
+async function loadSoireesAdmin() {
+  const { data } = await db.from('soirees_tropical').select('*').order('date_soiree', { ascending: false });
+  const el = document.getElementById('soirees-admin');
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-text">Aucune soirée créée</div></div>';
+    return;
+  }
+  el.innerHTML = data.map(s => {
+    const d = new Date(s.date_soiree);
+    return `
+    <div class="soiree-card">
+      <div class="soiree-date-badge">
+        <div class="sdb-day">${d.getDate().toString().padStart(2,'0')}</div>
+        <div class="sdb-month">${d.toLocaleString('fr', {month:'short'}).toUpperCase()}</div>
+      </div>
+      <div class="soiree-info">
+        <div class="soiree-name">${s.nom}</div>
+        <div class="soiree-meta">⏰ ${s.heure_debut || '—'} &nbsp;|&nbsp; 💶 ${s.prix_entree || 0}€ entrée</div>
+      </div>
+      <span class="soiree-status status-${s.statut}">${statusLabel(s.statut)}</span>
+      <div class="soiree-actions">
+        <button class="btn-outline btn-sm" onclick="openManageSoiree('${s.id}', '${escapeJs(s.nom)}', '${s.statut}')">⚙ Gérer</button>
+        ${s.statut === 'planifiee' ? `<button class="btn-primary btn-sm" onclick="updateSoireeStatut('${s.id}', 'en_cours')">▶ Démarrer</button>` : ''}
+        ${s.statut === 'en_cours' ? `<button class="btn-danger btn-sm" onclick="updateSoireeStatut('${s.id}', 'terminee')">⏹ Terminer</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeJs(str) { return str.replace(/'/g, "\\'"); }
+function statusLabel(s) {
+  if (s === 'planifiee') return '📅 Planifiée';
+  if (s === 'en_cours') return '🔴 En cours';
+  return '✓ Terminée';
+}
+
+async function updateSoireeStatut(id, statut) {
+  await db.from('soirees_tropical').update({ statut }).eq('id', id);
+  toast('Statut mis à jour', 'success');
+  loadSoireesAdmin();
+}
+
+function openCreateSoireeModal() {
+  // Load workers
+  loadWorkersForAssign();
+  openModal('modal-create-soiree');
+}
+
+async function loadWorkersForAssign() {
+  const { data } = await db.from('employees_tropical').select('*').eq('is_active', true);
+  const el = document.getElementById('cs-workers');
+  if (!data) return;
+  el.innerHTML = data.map(e => `
+    <div class="worker-item">
+      <input type="checkbox" class="worker-check" id="w-${e.id}" data-id="${e.id}" data-role="${e.role}">
+      <label for="w-${e.id}" class="worker-name">${e.username}</label>
+      <select class="form-select" style="width:140px;padding:4px 8px;font-size:0.8rem" id="wr-${e.id}">
+        <option value="barman">Barman</option>
+        <option value="securite">Sécurité</option>
+        <option value="patron">Patron</option>
+      </select>
+    </div>
+  `).join('');
+  data.forEach(e => { document.getElementById('wr-' + e.id).value = e.role; });
+}
+
+async function createSoiree() {
+  const nom = document.getElementById('cs-nom').value.trim();
+  const date = document.getElementById('cs-date').value;
+  const heure = document.getElementById('cs-heure').value;
+  const prix = parseFloat(document.getElementById('cs-prix').value) || 0;
+  const desc = document.getElementById('cs-desc').value.trim();
+
+  if (!nom || !date) { toast('Remplis le nom et la date', 'error'); return; }
+
+  const { data: soiree, error } = await db.from('soirees_tropical').insert({
+    nom, date_soiree: date, heure_debut: heure, prix_entree: prix,
+    description: desc, created_by: currentUser.id
+  }).select().single();
+
+  if (error) { toast('Erreur création soirée', 'error'); return; }
+
+  // Assign workers
+  const checks = document.querySelectorAll('.worker-check:checked');
+  const assigns = [];
+  checks.forEach(c => {
+    assigns.push({ soiree_id: soiree.id, employee_id: c.dataset.id, role_soiree: document.getElementById('wr-' + c.dataset.id).value });
+  });
+  if (assigns.length) await db.from('assignations_tropical').insert(assigns);
+
+  closeModal('modal-create-soiree');
+  toast('Soirée créée !', 'success');
+  loadSoireesAdmin();
+  loadSoireesForSelects();
+}
+
+async function openManageSoiree(soireeId, nom, statut) {
+  document.getElementById('aw-title').textContent = '⚙ ' + nom;
+  const el = document.getElementById('aw-content');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  openModal('modal-assign-workers');
+
+  const { data: assignations } = await db.from('assignations_tropical')
+    .select('*, employees_tropical(username, role)').eq('soiree_id', soireeId);
+  const { data: allEmployees } = await db.from('employees_tropical').select('*').eq('is_active', true);
+  const { data: services } = await db.from('services_tropical')
+    .select('*, employees_tropical(username)').eq('soiree_id', soireeId);
+
+  const assignedIds = assignations?.map(a => a.employee_id) || [];
+
+  el.innerHTML = `
+    <div style="margin-bottom:1.5rem">
+      <h4 style="font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:1rem">EMPLOYÉS ASSIGNÉS</h4>
+      ${assignations?.map(a => `
+        <div class="worker-item">
+          <span class="worker-name">${a.employees_tropical.username}</span>
+          <span class="soiree-status" style="font-size:0.65rem;letter-spacing:1px">${a.role_soiree}</span>
+          <button class="btn-danger btn-sm" onclick="removeAssignation('${a.id}', '${soireeId}', '${nom}', '${statut}')">✕</button>
+        </div>
+      `).join('') || '<p style="color:var(--text-dim)">Aucun employé assigné</p>'}
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <h4 style="font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:1rem">AJOUTER UN EMPLOYÉ</h4>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <select class="form-select" id="aw-emp-select" style="flex:1">
+          ${allEmployees?.filter(e => !assignedIds.includes(e.id)).map(e => `<option value="${e.id}|${e.role}">${e.username} (${e.role})</option>`).join('') || '<option>Tous assignés</option>'}
+        </select>
+        <select class="form-select" id="aw-role-select" style="width:140px">
+          <option value="barman">Barman</option>
+          <option value="securite">Sécurité</option>
+          <option value="patron">Patron</option>
+        </select>
+        <button class="btn-primary btn-sm" onclick="addAssignation('${soireeId}', '${nom}', '${statut}')">+ Ajouter</button>
+      </div>
+    </div>
+    <div>
+      <h4 style="font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:1rem">SERVICES (${services?.length || 0})</h4>
+      ${services?.map(s => `
+        <div class="history-entry">
+          <span>${s.employees_tropical?.username}</span>
+          <span style="color:${s.statut === 'en_cours' ? 'var(--neon-cyan)' : 'var(--text-dim)'}">
+            ${s.statut === 'en_cours' ? '🟢 En cours' : s.duree_minutes + ' min'}
+          </span>
+        </div>
+      `).join('') || '<p style="color:var(--text-dim)">Aucun service</p>'}
+    </div>
+  `;
+}
+
+async function removeAssignation(id, soireeId, nom, statut) {
+  await db.from('assignations_tropical').delete().eq('id', id);
+  openManageSoiree(soireeId, nom, statut);
+}
+
+async function addAssignation(soireeId, nom, statut) {
+  const val = document.getElementById('aw-emp-select').value;
+  const role = document.getElementById('aw-role-select').value;
+  if (!val) return;
+  const empId = val.split('|')[0];
+  await db.from('assignations_tropical').insert({ soiree_id: soireeId, employee_id: empId, role_soiree: role });
+  toast('Employé ajouté !', 'success');
+  openManageSoiree(soireeId, nom, statut);
+}
+
+// ============================================
+// PATRON: EQUIPE
+// ============================================
+async function loadEquipe() {
+  const { data } = await db.from('employees_tropical').select('*').order('created_at');
+  const el = document.getElementById('equipe-list');
+  if (!data?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div>Aucun employé</div></div>'; return; }
+
+  el.innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>Nom</th><th>Rôle</th><th>Discord ID</th><th>Statut</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${data.map(e => `
+          <tr>
+            <td><strong>${e.username}</strong></td>
+            <td><span class="role-${e.role}" style="font-weight:700">${e.role}</span></td>
+            <td style="color:var(--text-dim)">${e.discord_id || '—'}</td>
+            <td><span style="color:${e.is_active ? 'var(--neon-cyan)' : 'var(--neon-pink)'}">${e.is_active ? '✓ Actif' : '✗ Inactif'}</span></td>
+            <td>
+              <button class="btn-danger btn-sm" onclick="toggleEmployee('${e.id}', ${e.is_active})">
+                ${e.is_active ? 'Désactiver' : 'Activer'}
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openCreateEmployeeModal() { openModal('modal-create-employee'); }
+
+async function createEmployee() {
+  const username = document.getElementById('emp-username').value.trim();
+  const password = document.getElementById('emp-password').value;
+  const role = document.getElementById('emp-role').value;
+  const discord = document.getElementById('emp-discord').value.trim();
+
+  if (!username || !password || password.length < 6) { toast('Remplis correctement les champs (mdp min 6 car.)', 'error'); return; }
+
+  const hash = await bcrypt.hash(password, 10);
+  const { error } = await db.from('employees_tropical').insert({
+    username, password_hash: hash, role, discord_id: discord || null
+  });
+
+  if (error) { toast(error.message.includes('unique') ? 'Ce nom existe déjà' : 'Erreur', 'error'); return; }
+  closeModal('modal-create-employee');
+  toast(`Employé ${username} créé !`, 'success');
+  loadEquipe();
+}
+
+async function toggleEmployee(id, isActive) {
+  await db.from('employees_tropical').update({ is_active: !isActive }).eq('id', id);
+  toast('Mis à jour', 'success');
+  loadEquipe();
+}
+
+// ============================================
+// PATRON: ANNONCES
+// ============================================
+async function loadAnnoncesAdmin() {
+  const { data } = await db.from('annonces_tropical').select('*').order('created_at', { ascending: false });
+  const el = document.getElementById('annonces-admin-list');
+  if (!data?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📣</div><div>Aucune annonce</div></div>'; return; }
+
+  el.innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Titre</th><th>Type</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${data.map(a => `
+          <tr>
+            <td><strong>${a.titre}</strong></td>
+            <td>${a.type}</td>
+            <td style="color:var(--text-dim)">${a.date_event ? formatDate(a.date_event) : '—'}</td>
+            <td><span style="color:${a.is_published ? 'var(--neon-cyan)' : 'var(--text-dim)'}">${a.is_published ? '✓ Publiée' : '⏸ Brouillon'}</span></td>
+            <td style="display:flex;gap:0.5rem;flex-wrap:wrap">
+              <button class="btn-outline btn-sm" onclick="toggleAnnonce('${a.id}', ${a.is_published})">${a.is_published ? 'Dépublier' : 'Publier'}</button>
+              <button class="btn-danger btn-sm" onclick="deleteAnnonce('${a.id}')">✕</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openCreateAnnonceModal() { openModal('modal-create-annonce'); }
+
+async function createAnnonce() {
+  const titre = document.getElementById('ann-titre').value.trim();
+  const type = document.getElementById('ann-type').value;
+  const date = document.getElementById('ann-date').value;
+  const contenu = document.getElementById('ann-contenu').value.trim();
+  const image = document.getElementById('ann-image').value.trim();
+  const published = document.getElementById('ann-published').checked;
+
+  if (!titre || !contenu) { toast('Titre et contenu requis', 'error'); return; }
+
+  await db.from('annonces_tropical').insert({
+    titre, type, contenu, image_url: image || null,
+    date_event: date || null, is_published: published,
+    created_by: currentUser.id
+  });
+
+  closeModal('modal-create-annonce');
+  toast('Annonce créée !', 'success');
+  loadAnnoncesAdmin();
+  loadPublicAnnonces();
+}
+
+async function toggleAnnonce(id, current) {
+  await db.from('annonces_tropical').update({ is_published: !current }).eq('id', id);
+  loadAnnoncesAdmin();
+  loadPublicAnnonces();
+}
+
+async function deleteAnnonce(id) {
+  if (!confirm('Supprimer cette annonce ?')) return;
+  await db.from('annonces_tropical').delete().eq('id', id);
+  loadAnnoncesAdmin();
+  loadPublicAnnonces();
+}
+
+// ============================================
+// PATRON: PRODUITS
+// ============================================
+async function loadProduitsAdmin() {
+  const { data } = await db.from('produits_tropical').select('*').order('categorie');
+  const el = document.getElementById('produits-admin-list');
+  if (!data?.length) { el.innerHTML = '<div class="empty-state">Aucun produit</div>'; return; }
+
+  el.innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Emoji</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${data.map(p => `
+          <tr>
+            <td style="font-size:1.5rem">${p.emoji}</td>
+            <td><strong>${p.nom}</strong></td>
+            <td style="color:var(--text-dim)">${p.categorie}</td>
+            <td style="color:var(--neon-cyan);font-weight:700">${parseFloat(p.prix).toFixed(2)} €</td>
+            <td>
+              <button class="btn-danger btn-sm" onclick="toggleProduit('${p.id}', ${p.is_active})">
+                ${p.is_active ? '✕ Retirer' : '✓ Activer'}
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openCreateProduitModal() { openModal('modal-create-produit'); }
+
+async function createProduit() {
+  const nom = document.getElementById('prod-nom').value.trim();
+  const categorie = document.getElementById('prod-cat').value;
+  const prix = parseFloat(document.getElementById('prod-prix').value);
+  const emoji = document.getElementById('prod-emoji').value || '🍹';
+
+  if (!nom || isNaN(prix)) { toast('Remplis tous les champs', 'error'); return; }
+
+  await db.from('produits_tropical').insert({ nom, categorie, prix, emoji });
+  closeModal('modal-create-produit');
+  toast('Produit ajouté !', 'success');
+  loadProduitsAdmin();
+}
+
+async function toggleProduit(id, active) {
+  await db.from('produits_tropical').update({ is_active: !active }).eq('id', id);
+  loadProduitsAdmin();
+}
+
+// ============================================
+// PATRON: ALBUMS
+// ============================================
+async function loadAlbumsAdmin() {
+  const { data } = await db.from('albums_tropical').select('*, soirees_tropical(nom)').order('created_at', { ascending: false });
+  const el = document.getElementById('albums-admin-list');
+  if (!data?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📸</div><div>Aucun album</div></div>'; return; }
+
+  el.innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Nom</th><th>Soirée</th><th>Visibilité</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${data.map(a => `
+          <tr>
+            <td><strong>${a.nom}</strong></td>
+            <td style="color:var(--text-dim)">${a.soirees_tropical?.nom || '—'}</td>
+            <td><span style="color:${a.is_public ? 'var(--neon-cyan)' : 'var(--text-dim)'}">${a.is_public ? '🌐 Public' : '🔒 Privé'}</span></td>
+            <td style="display:flex;gap:0.5rem">
+              <button class="btn-outline btn-sm" onclick="openAddPhotoModal('${a.id}', '${escapeJs(a.nom)}')">+ Photo</button>
+              <button class="btn-danger btn-sm" onclick="deleteAlbum('${a.id}')">✕</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openCreateAlbumModal() { openModal('modal-create-album'); }
+
+async function createAlbum() {
+  const nom = document.getElementById('alb-nom').value.trim();
+  const soiree = document.getElementById('alb-soiree').value;
+  const isPublic = document.getElementById('alb-public').checked;
+
+  if (!nom) { toast('Nom requis', 'error'); return; }
+
+  await db.from('albums_tropical').insert({ nom, soiree_id: soiree || null, is_public: isPublic });
+  closeModal('modal-create-album');
+  toast('Album créé !', 'success');
+  loadAlbumsAdmin();
+  loadPublicAlbums();
+}
+
+async function deleteAlbum(id) {
+  if (!confirm('Supprimer cet album et toutes ses photos ?')) return;
+  await db.from('albums_tropical').delete().eq('id', id);
+  loadAlbumsAdmin();
+  loadPublicAlbums();
+}
+
+function openAddPhotoModal(albumId, albumNom) {
+  document.getElementById('photo-album-select').innerHTML = `<option value="${albumId}">${albumNom}</option>`;
+  openModal('modal-add-photo');
+}
+
+async function addPhoto() {
+  const albumId = document.getElementById('photo-album-select').value;
+  const url = document.getElementById('photo-url').value.trim();
+  const caption = document.getElementById('photo-caption').value.trim();
+
+  if (!url) { toast('URL requise', 'error'); return; }
+
+  await db.from('photos_tropical').insert({ album_id: albumId, url, caption: caption || null, uploaded_by: currentUser.id });
+  closeModal('modal-add-photo');
+  toast('Photo ajoutée !', 'success');
+  loadAlbumsAdmin();
+}
+
+// ============================================
+// RAPPORT
+// ============================================
+async function loadRapport(soireeId) {
+  if (!soireeId) return;
+  const el = document.getElementById('rapport-content');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  const [soiree, entrees, ventes, services] = await Promise.all([
+    db.from('soirees_tropical').select('*').eq('id', soireeId).single(),
+    db.from('entrees_tropical').select('*').eq('soiree_id', soireeId),
+    db.from('ventes_tropical').select('*').eq('soiree_id', soireeId),
+    db.from('services_tropical').select('*, employees_tropical(username)').eq('soiree_id', soireeId)
+  ]);
+
+  const s = soiree.data;
+  const ent = entrees.data || [];
+  const ven = ventes.data || [];
+  const srv = services.data || [];
+
+  const totalCA = ven.reduce((sum, v) => sum + parseFloat(v.total), 0);
+  const totalEntrees = ent.filter(e => e.type_entree !== 'refusee').length;
+  const totalVentes = ven.length;
+  const caBar = ven.filter(v => v.methode_paiement !== 'offert').reduce((sum, v) => sum + parseFloat(v.total), 0);
+  const caEntrees = totalEntrees * (s?.prix_entree || 0);
+  const totalService = srv.reduce((sum, s) => sum + (s.duree_minutes || 0), 0);
+
+  // Par produit
+  const byProduct = {};
+  ven.forEach(v => {
+    if (!byProduct[v.produit_id]) byProduct[v.produit_id] = { qte: 0, total: 0 };
+    byProduct[v.produit_id].qte += v.quantite;
+    byProduct[v.produit_id].total += parseFloat(v.total);
+  });
+
+  el.innerHTML = `
+    <div class="rapport-grid">
+      <div class="rapport-card">
+        <div class="rapport-value rapport-ca">${(totalCA + caEntrees).toFixed(2)} €</div>
+        <div class="rapport-label">Chiffre d'affaires total</div>
+      </div>
+      <div class="rapport-card">
+        <div class="rapport-value rapport-ca">${caBar.toFixed(2)} €</div>
+        <div class="rapport-label">CA Bar</div>
+      </div>
+      <div class="rapport-card">
+        <div class="rapport-value rapport-entrees">${totalEntrees}</div>
+        <div class="rapport-label">Entrées</div>
+      </div>
+      <div class="rapport-card">
+        <div class="rapport-value" style="color:var(--neon-purple)">${ent.filter(e=>e.type_entree==='vip').length}</div>
+        <div class="rapport-label">Entrées VIP</div>
+      </div>
+      <div class="rapport-card">
+        <div class="rapport-value rapport-ventes">${totalVentes}</div>
+        <div class="rapport-label">Transactions bar</div>
+      </div>
+      <div class="rapport-card">
+        <div class="rapport-value rapport-duree">${Math.round(totalService / 60)}h${totalService % 60}m</div>
+        <div class="rapport-label">Total heures équipe</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;flex-wrap:wrap">
+      <div>
+        <h4 style="font-family:'Orbitron',sans-serif;font-size:0.9rem;color:var(--neon-cyan);margin-bottom:1rem;letter-spacing:2px">SERVICES DE L'ÉQUIPE</h4>
+        ${srv.map(s => `
+          <div class="history-entry">
+            <span>${s.employees_tropical?.username}</span>
+            <span style="color:${s.statut==='en_cours'?'var(--neon-cyan)':'var(--text-dim)'}">
+              ${s.statut==='en_cours'?'🟢 En cours':(s.duree_minutes||0)+' min → ~'+(((s.duree_minutes||0)/60)*15).toFixed(2)+'€ prime'}
+            </span>
+          </div>
+        `).join('') || '<p style="color:var(--text-dim)">Aucun service</p>'}
+      </div>
+      <div>
+        <h4 style="font-family:'Orbitron',sans-serif;font-size:0.9rem;color:var(--neon-pink);margin-bottom:1rem;letter-spacing:2px">TOP VENTES</h4>
+        ${Object.entries(byProduct).sort((a,b)=>b[1].total-a[1].total).slice(0,8).map(([pid, d]) => {
+          const prod = ven.find(v => v.produit_id === pid);
+          return `<div class="history-entry"><span>Produit</span><span style="color:var(--neon-cyan)">${d.qte}x — ${d.total.toFixed(2)} €</span></div>`;
+        }).join('') || '<p style="color:var(--text-dim)">Aucune vente</p>'}
+      </div>
+    </div>
+  `;
+}
+
+// ============================================
+// PUBLIC: ANNONCES
+// ============================================
+async function loadPublicAnnonces() {
+  const { data } = await db.from('annonces_tropical').select('*').eq('is_published', true).order('created_at', { ascending: false }).limit(6);
+  const el = document.getElementById('annonces-public');
+
+  // Update hero
+  const nextEvent = data?.find(a => a.date_event && new Date(a.date_event) >= new Date());
+  if (nextEvent) {
+    document.getElementById('hero-event-title').textContent = nextEvent.titre;
+    document.getElementById('hero-event-date').textContent = '📅 ' + formatDate(nextEvent.date_event);
+  } else {
+    document.getElementById('hero-event-title').textContent = 'Aucun événement prévu';
+    document.getElementById('hero-event-date').textContent = 'Reste à l\'écoute !';
+  }
+
+  if (!data?.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📣</div><div class="empty-state-text">Pas encore d\'annonces</div></div>';
+    return;
+  }
+
+  el.innerHTML = data.map(a => `
+    <div class="annonce-card">
+      ${a.image_url ? `<img class="annonce-img" src="${a.image_url}" alt="${a.titre}" onerror="this.style.display='none'">` : `<div class="annonce-img-placeholder">${typeEmoji(a.type)}</div>`}
+      <div class="annonce-body">
+        <div class="annonce-type">${a.type.toUpperCase()}</div>
+        <div class="annonce-title">${a.titre}</div>
+        <div class="annonce-text">${a.contenu.substring(0, 120)}${a.contenu.length > 120 ? '...' : ''}</div>
+        ${a.date_event ? `<div class="annonce-date">📅 ${formatDate(a.date_event)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function typeEmoji(t) {
+  if (t === 'soiree') return '🎉';
+  if (t === 'promo') return '💥';
+  if (t === 'urgent') return '🚨';
+  return 'ℹ️';
+}
+
+async function loadPublicSoirees() {
+  const { data } = await db.from('soirees_tropical').select('*').order('date_soiree', { ascending: false });
+  const el = document.getElementById('soirees-public');
+  if (!data?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-text">Aucune soirée annoncée</div></div>'; return; }
+
+  el.innerHTML = data.map(s => `
+    <div class="annonce-card">
+      <div class="annonce-img-placeholder" style="background:var(--gradient-sunset)">🎉</div>
+      <div class="annonce-body">
+        <div class="annonce-type">${statusLabel(s.statut)}</div>
+        <div class="annonce-title">${s.nom}</div>
+        <div class="annonce-text">${s.description || 'Une soirée inoubliable au Tropical Heights !'}</div>
+        <div class="annonce-date">📅 ${formatDate(s.date_soiree)} à ${s.heure_debut || '22:00'}${s.prix_entree > 0 ? ` — 💶 ${s.prix_entree}€ / entrée` : ' — 🆓 Entrée gratuite'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// PUBLIC: GALERIE
+// ============================================
+async function loadPublicAlbums() {
+  const { data } = await db.from('albums_tropical').select('*, soirees_tropical(nom)').eq('is_public', true).order('created_at', { ascending: false });
+  const el = document.getElementById('albums-public');
+
+  if (!data?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📸</div><div class="empty-state-text">Aucun album photo</div></div>'; return; }
+
+  // Get photo counts
+  el.innerHTML = data.map(a => `
+    <div class="album-card" onclick="openAlbum('${a.id}', '${escapeJs(a.nom)}')">
+      <div class="album-cover">📸</div>
+      <div class="album-info">
+        <div class="album-name">${a.nom}</div>
+        <div class="album-count">${a.soirees_tropical?.nom || 'Album photos'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function openAlbum(albumId, nom) {
+  document.getElementById('galerie-albums-view').style.display = 'none';
+  document.getElementById('galerie-photos-view').style.display = 'block';
+  document.getElementById('album-current-name').textContent = nom;
+
+  const { data } = await db.from('photos_tropical').select('*').eq('album_id', albumId).order('created_at');
+  const el = document.getElementById('photos-public');
+
+  if (!data?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📷</div><div>Cet album est vide</div></div>'; return; }
+
+  el.innerHTML = data.map(p => `
+    <div class="photo-item">
+      <img src="${p.url}" alt="${p.caption || ''}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=padding:2rem;text-align:center;color:var(--text-dim)>Image indisponible</div>'">
+    </div>
+  `).join('');
+}
+
+function showAlbumsView() {
+  document.getElementById('galerie-albums-view').style.display = 'block';
+  document.getElementById('galerie-photos-view').style.display = 'none';
+}
+
+// ============================================
+// UTILS
+// ============================================
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function formatTime(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// Enter key on login
+document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ============================================
+// INIT
+// ============================================
+loadPublicAnnonces();
+
+// Check service en cours au chargement
+async function checkActiveService() {
+  if (!currentUser) return;
+  const { data } = await db.from('services_tropical')
+    .select('*').eq('employee_id', currentUser.id).eq('statut', 'en_cours').single();
+  if (data) {
+    currentService = data;
+    startServiceTimer();
+    document.getElementById('btn-prise').style.display = 'none';
+    document.getElementById('btn-fin').style.display = '';
+    document.getElementById('service-status').textContent = 'Service en cours ✓';
+  }
+  loadServiceHistory();
+}
+</script>
+</body>
+</html>
