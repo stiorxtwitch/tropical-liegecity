@@ -176,7 +176,6 @@ body::before {
   border: none;
 }
 
-/* Equalizer bars animation */
 .eq-bars {
   display: flex;
   align-items: flex-end;
@@ -201,7 +200,6 @@ body::before {
 }
 .eq-bars.paused .eq-bar { animation-play-state: paused; height: 4px; opacity: 0.3; }
 
-/* Pulsing ring when playing */
 #music-toggle-btn.playing::after {
   content: '';
   position: absolute;
@@ -217,7 +215,6 @@ body::before {
   100% { transform: scale(1.6); opacity: 0; }
 }
 
-/* YouTube iframe hidden */
 #yt-player-container {
   position: fixed;
   top: -9999px;
@@ -846,6 +843,20 @@ body::before {
 }
 .ticket-total-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
 .ticket-total-amount { font-family: 'Orbitron', sans-serif; font-size: 1.7rem; color: var(--neon-cyan); }
+
+/* Réduction badge sur le ticket */
+.ticket-discount-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(191,0,255,0.15);
+  font-size: 0.82rem;
+  color: var(--neon-purple);
+  font-style: italic;
+}
+.ticket-discount-remove {
+  background: none; border: none; color: var(--neon-pink); cursor: pointer; font-size: 0.85rem;
+}
+
 .payment-btns { display: flex; gap: 0.4rem; margin-top: 0.9rem; }
 .payment-btn {
   flex: 1; background: transparent;
@@ -856,6 +867,83 @@ body::before {
 }
 .payment-btn.selected { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,245,255,0.07); }
 .payment-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+/* Boutons caisse extras */
+.caisse-extra-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+.btn-extra-caisse {
+  background: transparent;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.btn-extra-prix-libre {
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0,245,255,0.35);
+}
+.btn-extra-prix-libre:hover {
+  background: rgba(0,245,255,0.1);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0,245,255,0.15);
+}
+.btn-extra-reduction {
+  color: var(--neon-purple);
+  border: 1px solid rgba(191,0,255,0.35);
+}
+.btn-extra-reduction:hover {
+  background: rgba(191,0,255,0.1);
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 10px rgba(191,0,255,0.15);
+}
+.btn-extra-modif-total {
+  color: var(--sunset-orange);
+  border: 1px solid rgba(255,140,66,0.35);
+}
+.btn-extra-modif-total:hover {
+  background: rgba(255,140,66,0.1);
+  border-color: var(--sunset-orange);
+  box-shadow: 0 0 10px rgba(255,140,66,0.15);
+}
+
+/* Tab réduction dans le modal */
+.reduc-tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid rgba(191,0,255,0.25); border-radius: 8px; overflow: hidden; }
+.reduc-tab {
+  flex: 1; background: transparent; border: none;
+  color: var(--text-dim);
+  font-family: 'Rajdhani', sans-serif; font-weight: 700;
+  font-size: 0.82rem; letter-spacing: 1px; text-transform: uppercase;
+  padding: 10px; cursor: pointer; transition: all 0.2s;
+}
+.reduc-tab.active { background: rgba(191,0,255,0.15); color: var(--neon-purple); }
+.reduc-tab:hover:not(.active) { background: rgba(191,0,255,0.05); color: var(--text-light); }
+
+/* Prévisualisation réduction */
+.reduc-preview {
+  background: rgba(191,0,255,0.07);
+  border: 1px solid rgba(191,0,255,0.2);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.reduc-preview-label { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+.reduc-preview-value { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; color: var(--neon-purple); }
 
 /* RAPPORT */
 .rapport-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
@@ -1162,7 +1250,15 @@ body::before {
             <button class="payment-btn" id="pay-carte" onclick="selectPayment('carte')">💳 Carte</button>
             <button class="payment-btn" id="pay-offert" onclick="selectPayment('offert')">🎁 Offert</button>
           </div>
-          <div style="display:flex;gap:0.5rem;margin-top:0.9rem">
+
+          <!-- ===== BOUTONS EXTRAS CAISSE ===== -->
+          <div class="caisse-extra-btns">
+            <button class="btn-extra-caisse btn-extra-prix-libre" onclick="openModal('modal-prix-libre')">✏ Prix libre</button>
+            <button class="btn-extra-caisse btn-extra-reduction" onclick="openReductionModal()">% Réduction</button>
+            <button class="btn-extra-caisse btn-extra-modif-total" onclick="openModal('modal-modif-total')" style="grid-column:1/-1">✎ Modifier le total</button>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
             <button class="btn-danger btn-sm" onclick="clearTicket()" style="flex:1">✖ Vider</button>
             <button class="btn-primary btn-sm" onclick="validerVente()" style="flex:2">✓ VALIDER</button>
           </div>
@@ -1250,6 +1346,95 @@ body::before {
     </div>
     <button class="btn-primary btn-full" style="margin-top:0.5rem" onclick="doLogin()">Connexion</button>
     <p style="color:var(--text-dim);font-size:0.78rem;text-align:center;margin-top:1rem">Accès réservé au personnel de Tropical Heights</p>
+  </div>
+</div>
+
+<!-- ===== MODAL PRIX LIBRE ===== -->
+<div class="modal-overlay" id="modal-prix-libre">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-prix-libre')">✕</button>
+    <div class="modal-title">✏ Prix Personnalisé</div>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1.4rem;line-height:1.5">Ajoute un article avec un prix libre au ticket (entrée spéciale, prestation particulière…)</p>
+    <div class="form-group">
+      <label class="form-label">Désignation</label>
+      <input class="form-input" id="libre-nom" placeholder="Ex: Bouteille VIP, Entrée spéciale...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Emoji (optionnel)</label>
+      <input class="form-input" id="libre-emoji" placeholder="🎁" maxlength="4" style="max-width:100px">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Prix (€)</label>
+      <input class="form-input" id="libre-prix" type="number" step="0.50" min="0" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Quantité</label>
+      <input class="form-input" id="libre-qte" type="number" min="1" value="1" placeholder="1">
+    </div>
+    <button class="btn-primary btn-full" onclick="ajouterPrixLibre()">+ Ajouter au ticket</button>
+  </div>
+</div>
+
+<!-- ===== MODAL RÉDUCTION ===== -->
+<div class="modal-overlay" id="modal-reduction">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-reduction')">✕</button>
+    <div class="modal-title">% Réduction</div>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1.2rem;line-height:1.5">Applique une réduction sur le total du ticket en cours.</p>
+    <div class="reduc-tabs">
+      <button class="reduc-tab active" id="reduc-tab-pct" onclick="switchReducTab('pct')">% Pourcentage</button>
+      <button class="reduc-tab" id="reduc-tab-fixe" onclick="switchReducTab('fixe')">€ Montant fixe</button>
+    </div>
+    <div id="reduc-pct-zone">
+      <div class="form-group">
+        <label class="form-label">Pourcentage de réduction</label>
+        <input class="form-input" id="reduc-pct-val" type="number" min="1" max="100" step="1" placeholder="Ex: 20" oninput="updateReducPreview()">
+      </div>
+    </div>
+    <div id="reduc-fixe-zone" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Montant à déduire (€)</label>
+        <input class="form-input" id="reduc-fixe-val" type="number" min="0.01" step="0.50" placeholder="Ex: 5.00" oninput="updateReducPreview()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Motif (optionnel)</label>
+      <input class="form-input" id="reduc-motif" placeholder="Ex: Fidélité, Happy hour...">
+    </div>
+    <div class="reduc-preview" id="reduc-preview" style="display:none">
+      <div>
+        <div class="reduc-preview-label">Réduction appliquée</div>
+        <div style="color:var(--text-dim);font-size:0.75rem;margin-top:2px" id="reduc-preview-detail"></div>
+      </div>
+      <div class="reduc-preview-value" id="reduc-preview-amount">-0.00 €</div>
+    </div>
+    <button class="btn-primary btn-full" style="margin-top:1rem;background:linear-gradient(135deg,var(--neon-purple),var(--neon-pink));box-shadow:0 0 20px rgba(191,0,255,0.4)" onclick="appliquerReduction()">✓ Appliquer la réduction</button>
+  </div>
+</div>
+
+<!-- ===== MODAL MODIFIER TOTAL ===== -->
+<div class="modal-overlay" id="modal-modif-total">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-modif-total')">✕</button>
+    <div class="modal-title">✎ Modifier le Total</div>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1.4rem;line-height:1.5">Force un montant total précis pour ce ticket, quelle que soit la somme des articles.</p>
+    <div style="background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.15);border-radius:8px;padding:1rem;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="color:var(--text-dim);font-size:0.82rem;letter-spacing:1px;text-transform:uppercase">Total actuel</span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:1.3rem;color:var(--neon-cyan)" id="modif-total-actuel">0.00 €</span>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nouveau total (€)</label>
+      <input class="form-input" id="modif-total-val" type="number" min="0" step="0.50" placeholder="0.00" oninput="updateModifTotalPreview()" style="font-size:1.3rem;padding:14px;text-align:center">
+    </div>
+    <div id="modif-total-preview" style="display:none;background:rgba(255,140,66,0.07);border:1px solid rgba(255,140,66,0.2);border-radius:8px;padding:0.9rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="color:var(--text-dim);font-size:0.8rem;text-transform:uppercase;letter-spacing:1px">Différence</span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:1.1rem;color:var(--sunset-orange)" id="modif-total-diff"></span>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Motif (optionnel)</label>
+      <input class="form-input" id="modif-total-motif" placeholder="Ex: Arrondi, Geste commercial...">
+    </div>
+    <button class="btn-primary btn-full" style="background:linear-gradient(135deg,var(--sunset-orange),var(--sunset-pink));box-shadow:0 0 20px rgba(255,140,66,0.3)" onclick="appliquerModifTotal()">✓ Appliquer ce total</button>
   </div>
 </div>
 
@@ -1444,11 +1629,8 @@ body::before {
   </div>
 </div>
 
-<!-- ============================== YOUTUBE IFrame API ============================== -->
+<!-- ============================== SCRIPTS ============================== -->
 <script>
-// ============================================================
-// YOUTUBE MUSIC PLAYER
-// ============================================================
 const YT_VIDEO_ID = 'Y6mlwzzJ4lc';
 let ytPlayer = null;
 let musicPlaying = false;
@@ -1464,22 +1646,9 @@ function loadYouTubeAPI() {
 
 window.onYouTubeIframeAPIReady = function() {
   ytPlayer = new YT.Player('yt-player', {
-    height: '1',
-    width: '1',
-    videoId: YT_VIDEO_ID,
-    playerVars: {
-      autoplay: 0,      // ← PAS d'autoplay, le navigateur le bloque
-      controls: 0,
-      loop: 1,
-      playlist: YT_VIDEO_ID,
-      modestbranding: 1,
-      rel: 0,
-    },
-    events: {
-      onReady: onPlayerReady,
-      onStateChange: onPlayerStateChange,
-      onError: onPlayerError
-    }
+    height: '1', width: '1', videoId: YT_VIDEO_ID,
+    playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: YT_VIDEO_ID, modestbranding: 1, rel: 0 },
+    events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError }
   });
 };
 
@@ -1487,28 +1656,17 @@ function onPlayerReady(event) {
   ytReady = true;
   event.target.setVolume(currentVolume);
   updateVolumeSliderBg(currentVolume);
-  // Afficher un indicateur "Clique pour la musique"
-  const btn = document.getElementById('music-toggle-btn');
-  if (btn) btn.title = 'Clique pour ouvrir et lancer la musique';
 }
 
 function onPlayerStateChange(event) {
-  if (event.data === YT.PlayerState.PLAYING) {
-    musicPlaying = true;
-    updatePlayerUI(true);
-  } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-    musicPlaying = false;
-    updatePlayerUI(false);
-    if (event.data === YT.PlayerState.ENDED) {
-      setTimeout(() => { if (ytPlayer) ytPlayer.playVideo(); }, 500);
-    }
+  if (event.data === YT.PlayerState.PLAYING) { musicPlaying = true; updatePlayerUI(true); }
+  else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+    musicPlaying = false; updatePlayerUI(false);
+    if (event.data === YT.PlayerState.ENDED) setTimeout(() => { if (ytPlayer) ytPlayer.playVideo(); }, 500);
   }
 }
 
-function onPlayerError(event) {
-  console.warn('YouTube player error:', event.data);
-  updatePlayerUI(false);
-}
+function onPlayerError(event) { console.warn('YouTube player error:', event.data); updatePlayerUI(false); }
 
 function updatePlayerUI(playing) {
   const btn = document.getElementById('play-pause-btn');
@@ -1521,11 +1679,7 @@ function updatePlayerUI(playing) {
 
 function togglePlayPause() {
   if (!ytPlayer || !ytReady) { toast('Lecteur pas encore prêt…', 'info'); return; }
-  if (musicPlaying) {
-    ytPlayer.pauseVideo();
-  } else {
-    ytPlayer.playVideo();
-  }
+  if (musicPlaying) ytPlayer.pauseVideo(); else ytPlayer.playVideo();
 }
 
 function toggleMusicPanel() {
@@ -1533,10 +1687,7 @@ function toggleMusicPanel() {
   const player = document.getElementById('music-player');
   if (musicPanelOpen) {
     player.classList.remove('collapsed');
-    // Lance la musique à la première ouverture du panel (= interaction utilisateur ✓)
-    if (ytReady && !musicPlaying) {
-      ytPlayer.playVideo();
-    }
+    if (ytReady && !musicPlaying) ytPlayer.playVideo();
   } else {
     player.classList.add('collapsed');
   }
@@ -1560,28 +1711,24 @@ loadYouTubeAPI();
 </script>
 
 <script>
-// ============================================================
-// SUPABASE
-// ============================================================
 const SUPA_URL = 'https://sevrfgivcpefyykuffti.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNldnJmZ2l2Y3BlZnl5a3VmZnRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDI1NTMsImV4cCI6MjA3ODUxODU1M30.YZnkSHsVWKQEhfU7xYfWyTFmtkM28Zuzdu7Y1sjBXQc';
 const { createClient } = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY);
 
-// ============================================================
-// STATE
-// ============================================================
 let currentUser = null;
 let currentService = null;
 let serviceTimerInterval = null;
 let caisseSoireeId = null;
 let secuSoireeId = null;
 let ticket = [];
+let ticketDiscount = null;   // { type: 'pct'|'fixe'|'total', valeur, motif }
 let paymentMethod = 'especes';
 let produits = [];
 let currentProduitCat = 'all';
 let manageSoireeId = null;
 let currentMenuCat = 'all';
+let reducTabMode = 'pct';
 
 // ============================================================
 // NAVIGATION
@@ -1598,9 +1745,6 @@ function showPage(page) {
   if (page === 'galerie') loadPublicAlbums();
 }
 
-// ============================================================
-// TOAST
-// ============================================================
 function toast(msg, type = 'info') {
   const t = document.createElement('div');
   t.className = `toast ${type}`;
@@ -1609,9 +1753,6 @@ function toast(msg, type = 'info') {
   setTimeout(() => t.remove(), 4000);
 }
 
-// ============================================================
-// MODALS
-// ============================================================
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -1626,17 +1767,9 @@ async function doLogin() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
   if (!username || !password) { toast('Remplis tous les champs', 'error'); return; }
-
-  const { data, error } = await db
-    .from('employees_tropical')
-    .select('*')
-    .eq('username', username)
-    .eq('is_active', true)
-    .single();
-
+  const { data, error } = await db.from('employees_tropical').select('*').eq('username', username).eq('is_active', true).single();
   if (error || !data) { toast('Utilisateur introuvable', 'error'); return; }
   if (data.password !== password) { toast('Mot de passe incorrect', 'error'); return; }
-
   currentUser = data;
   closeModal('modal-login');
   document.getElementById('login-btn').style.display = 'none';
@@ -1650,13 +1783,14 @@ function logout() {
   clearInterval(serviceTimerInterval);
   currentService = null;
   ticket = [];
+  ticketDiscount = null;
   document.getElementById('login-btn').style.display = '';
   showPage('home');
   toast('Déconnecté', 'info');
 }
 
 // ============================================================
-// DASHBOARD INIT
+// DASHBOARD
 // ============================================================
 function initDashboard() {
   document.getElementById('dash-welcome').textContent = `Bienvenue, ${currentUser.username} !`;
@@ -1667,11 +1801,7 @@ function initDashboard() {
   buildTabs();
   loadSoireesForSelects();
   if (currentUser.role === 'patron') {
-    loadSoireesAdmin();
-    loadEquipe();
-    loadAnnoncesAdmin();
-    loadProduitsAdmin();
-    loadAlbumsAdmin();
+    loadSoireesAdmin(); loadEquipe(); loadAnnoncesAdmin(); loadProduitsAdmin(); loadAlbumsAdmin();
   }
   checkActiveService();
 }
@@ -1688,11 +1818,9 @@ function buildTabs() {
     { id: 'produits', label: '🍹 Produits',  roles: ['patron'] },
     { id: 'albums',   label: '📸 Albums',    roles: ['patron'] },
   ];
-
   const el = document.getElementById('dashboard-tabs');
   el.innerHTML = '';
   let first = true;
-
   tabsDef.forEach(t => {
     if (!t.roles.includes(currentUser.role)) return;
     const btn = document.createElement('button');
@@ -1715,43 +1843,30 @@ function buildTabs() {
   });
 }
 
-// ============================================================
-// SOIREES SELECTS
-// ============================================================
 async function loadSoireesForSelects() {
   const { data } = await db.from('soirees_tropical').select('*').order('date_soiree', { ascending: false });
   if (!data) return;
-
   ['service-soiree-select','secu-soiree-select','caisse-soiree-select','rapport-soiree-select'].forEach(sid => {
     const sel = document.getElementById(sid);
     if (!sel) return;
     sel.innerHTML = '<option value="">— Sélectionner une soirée —</option>';
     data.forEach(s => {
       const o = document.createElement('option');
-      o.value = s.id;
-      o.textContent = `${s.nom} — ${fmtDate(s.date_soiree)}`;
-      sel.appendChild(o);
+      o.value = s.id; o.textContent = `${s.nom} — ${fmtDate(s.date_soiree)}`; sel.appendChild(o);
     });
   });
-
   const albSel = document.getElementById('alb-soiree');
   if (albSel) {
     albSel.innerHTML = '<option value="">— Aucune —</option>';
-    data.forEach(s => {
-      const o = document.createElement('option');
-      o.value = s.id;
-      o.textContent = s.nom;
-      albSel.appendChild(o);
-    });
+    data.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = s.nom; albSel.appendChild(o); });
   }
 }
 
 // ============================================================
-// SERVICE TIMER
+// SERVICE
 // ============================================================
 async function checkActiveService() {
-  const { data } = await db.from('services_tropical')
-    .select('*').eq('employee_id', currentUser.id).eq('statut', 'en_cours').maybeSingle();
+  const { data } = await db.from('services_tropical').select('*').eq('employee_id', currentUser.id).eq('statut', 'en_cours').maybeSingle();
   if (data) {
     currentService = data;
     startServiceTimer();
@@ -1765,14 +1880,7 @@ async function checkActiveService() {
 async function priseDeService() {
   const soireeId = document.getElementById('service-soiree-select').value;
   if (!soireeId) { toast('Sélectionne une soirée', 'error'); return; }
-
-  const { data, error } = await db.from('services_tropical').insert({
-    employee_id: currentUser.id,
-    soiree_id: soireeId,
-    heure_debut: new Date().toISOString(),
-    statut: 'en_cours'
-  }).select().single();
-
+  const { data, error } = await db.from('services_tropical').insert({ employee_id: currentUser.id, soiree_id: soireeId, heure_debut: new Date().toISOString(), statut: 'en_cours' }).select().single();
   if (error) { toast('Erreur prise de service', 'error'); return; }
   currentService = data;
   startServiceTimer();
@@ -1786,8 +1894,7 @@ function startServiceTimer() {
   clearInterval(serviceTimerInterval);
   serviceTimerInterval = setInterval(() => {
     if (!currentService) return;
-    const elapsed = Date.now() - new Date(currentService.heure_debut).getTime();
-    document.getElementById('service-timer').textContent = fmtDuration(elapsed);
+    document.getElementById('service-timer').textContent = fmtDuration(Date.now() - new Date(currentService.heure_debut).getTime());
   }, 1000);
 }
 
@@ -1807,9 +1914,7 @@ async function finDeService() {
 }
 
 async function loadServiceHistory() {
-  const { data } = await db.from('services_tropical')
-    .select('*, soirees_tropical(nom)').eq('employee_id', currentUser.id)
-    .eq('statut', 'termine').order('created_at', { ascending: false }).limit(10);
+  const { data } = await db.from('services_tropical').select('*, soirees_tropical(nom)').eq('employee_id', currentUser.id).eq('statut', 'termine').order('created_at', { ascending: false }).limit(10);
   const el = document.getElementById('service-history');
   if (!data?.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div>Aucun service enregistré</div></div>'; return; }
   el.innerHTML = data.map(s => `
@@ -1822,10 +1927,7 @@ async function loadServiceHistory() {
 // ============================================================
 // SECURITE
 // ============================================================
-function selectSecuSoiree(val) {
-  secuSoireeId = val;
-  if (val) loadEntreesCount();
-}
+function selectSecuSoiree(val) { secuSoireeId = val; if (val) loadEntreesCount(); }
 
 async function addEntree(type) {
   if (!secuSoireeId) { toast('Sélectionne une soirée d\'abord', 'error'); return; }
@@ -1890,28 +1992,202 @@ function addToTicket(p) {
   renderTicket();
 }
 
+// ============================================================
+// PRIX LIBRE
+// ============================================================
+function ajouterPrixLibre() {
+  const nom = document.getElementById('libre-nom').value.trim();
+  const emoji = document.getElementById('libre-emoji').value.trim() || '🎁';
+  const prix = parseFloat(document.getElementById('libre-prix').value);
+  const qte = parseInt(document.getElementById('libre-qte').value) || 1;
+  if (!nom) { toast('Donne un nom à l\'article', 'error'); return; }
+  if (isNaN(prix) || prix < 0) { toast('Prix invalide', 'error'); return; }
+  ticket.push({ produit_id: 'libre_' + Date.now(), nom, emoji, prix, quantite: qte, libre: true });
+  renderTicket();
+  closeModal('modal-prix-libre');
+  toast(`${emoji} ${nom} ajouté au ticket`, 'success');
+  document.getElementById('libre-nom').value = '';
+  document.getElementById('libre-emoji').value = '';
+  document.getElementById('libre-prix').value = '';
+  document.getElementById('libre-qte').value = '1';
+}
+
+// ============================================================
+// RÉDUCTION
+// ============================================================
+function openReductionModal() {
+  const rawTotal = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  if (!ticket.length || rawTotal <= 0) { toast('Le ticket est vide', 'error'); return; }
+  document.getElementById('reduc-pct-val').value = '';
+  document.getElementById('reduc-fixe-val').value = '';
+  document.getElementById('reduc-motif').value = '';
+  document.getElementById('reduc-preview').style.display = 'none';
+  reducTabMode = 'pct';
+  document.getElementById('reduc-tab-pct').classList.add('active');
+  document.getElementById('reduc-tab-fixe').classList.remove('active');
+  document.getElementById('reduc-pct-zone').style.display = '';
+  document.getElementById('reduc-fixe-zone').style.display = 'none';
+  openModal('modal-reduction');
+}
+
+function switchReducTab(mode) {
+  reducTabMode = mode;
+  document.getElementById('reduc-tab-pct').classList.toggle('active', mode === 'pct');
+  document.getElementById('reduc-tab-fixe').classList.toggle('active', mode === 'fixe');
+  document.getElementById('reduc-pct-zone').style.display = mode === 'pct' ? '' : 'none';
+  document.getElementById('reduc-fixe-zone').style.display = mode === 'fixe' ? '' : 'none';
+  document.getElementById('reduc-preview').style.display = 'none';
+}
+
+function updateReducPreview() {
+  const rawTotal = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  let montant = 0;
+  let detail = '';
+  if (reducTabMode === 'pct') {
+    const pct = parseFloat(document.getElementById('reduc-pct-val').value);
+    if (!isNaN(pct) && pct > 0 && pct <= 100) {
+      montant = rawTotal * pct / 100;
+      detail = `${pct}% sur ${rawTotal.toFixed(2)} €`;
+    }
+  } else {
+    const fixe = parseFloat(document.getElementById('reduc-fixe-val').value);
+    if (!isNaN(fixe) && fixe > 0) {
+      montant = Math.min(fixe, rawTotal);
+      detail = `Montant fixe sur ${rawTotal.toFixed(2)} €`;
+    }
+  }
+  if (montant > 0) {
+    document.getElementById('reduc-preview').style.display = 'flex';
+    document.getElementById('reduc-preview-amount').textContent = '-' + montant.toFixed(2) + ' €';
+    document.getElementById('reduc-preview-detail').textContent = detail;
+  } else {
+    document.getElementById('reduc-preview').style.display = 'none';
+  }
+}
+
+function appliquerReduction() {
+  const rawTotal = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  const motif = document.getElementById('reduc-motif').value.trim() || 'Réduction';
+  let montant = 0;
+  if (reducTabMode === 'pct') {
+    const pct = parseFloat(document.getElementById('reduc-pct-val').value);
+    if (isNaN(pct) || pct <= 0 || pct > 100) { toast('Pourcentage invalide (1-100)', 'error'); return; }
+    montant = rawTotal * pct / 100;
+    ticketDiscount = { type: 'pct', valeur: pct, montant, motif };
+  } else {
+    const fixe = parseFloat(document.getElementById('reduc-fixe-val').value);
+    if (isNaN(fixe) || fixe <= 0) { toast('Montant invalide', 'error'); return; }
+    montant = Math.min(fixe, rawTotal);
+    ticketDiscount = { type: 'fixe', valeur: fixe, montant, motif };
+  }
+  closeModal('modal-reduction');
+  renderTicket();
+  toast(`Réduction de -${montant.toFixed(2)} € appliquée !`, 'success');
+}
+
+// ============================================================
+// MODIFIER TOTAL
+// ============================================================
+function openModal_modifTotal() {
+  const rawTotal = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  document.getElementById('modif-total-actuel').textContent = rawTotal.toFixed(2) + ' €';
+  document.getElementById('modif-total-val').value = '';
+  document.getElementById('modif-total-motif').value = '';
+  document.getElementById('modif-total-preview').style.display = 'none';
+  openModal('modal-modif-total');
+}
+
+// Override openModal pour modal-modif-total
+const _origOpenModal = openModal;
+
+function updateModifTotalPreview() {
+  const rawTotal = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  const newVal = parseFloat(document.getElementById('modif-total-val').value);
+  const preview = document.getElementById('modif-total-preview');
+  if (!isNaN(newVal) && newVal >= 0) {
+    const diff = newVal - rawTotal;
+    document.getElementById('modif-total-diff').textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2) + ' €';
+    preview.style.display = 'flex';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+function appliquerModifTotal() {
+  if (!ticket.length) { toast('Le ticket est vide', 'error'); return; }
+  const newVal = parseFloat(document.getElementById('modif-total-val').value);
+  const motif = document.getElementById('modif-total-motif').value.trim() || 'Modification manuelle';
+  if (isNaN(newVal) || newVal < 0) { toast('Montant invalide', 'error'); return; }
+  ticketDiscount = { type: 'total', valeur: newVal, montant: null, motif };
+  closeModal('modal-modif-total');
+  renderTicket();
+  toast(`Total modifié → ${newVal.toFixed(2)} €`, 'success');
+}
+
+// ============================================================
+// RENDER TICKET (avec réduction)
+// ============================================================
+function getTicketTotal() {
+  const raw = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+  if (!ticketDiscount) return raw;
+  if (ticketDiscount.type === 'total') return ticketDiscount.valeur;
+  if (ticketDiscount.type === 'pct') return Math.max(0, raw - raw * ticketDiscount.valeur / 100);
+  if (ticketDiscount.type === 'fixe') return Math.max(0, raw - ticketDiscount.valeur);
+  return raw;
+}
+
 function renderTicket() {
   const el = document.getElementById('ticket-items');
   if (!ticket.length) {
+    ticketDiscount = null;
     el.innerHTML = '<div class="empty-state" style="padding:2rem"><div style="font-size:2rem">🧾</div><div style="font-size:0.82rem;margin-top:0.4rem">Ticket vide</div></div>';
     document.getElementById('ticket-total').textContent = '0.00 €';
     return;
   }
-  el.innerHTML = ticket.map((t, i) => `
+
+  let html = ticket.map((t, i) => `
     <div class="ticket-item">
-      <span>${t.emoji} ${t.nom}</span>
+      <span>${t.emoji} ${t.nom}${t.libre ? ' <span style="font-size:0.7rem;color:var(--neon-cyan);opacity:0.7">(libre)</span>' : ''}</span>
       <span style="display:flex;align-items:center;gap:0.4rem">
         <span style="color:var(--text-dim)">${t.quantite}x</span>
         <span style="color:var(--neon-cyan);font-weight:700">${(t.prix * t.quantite).toFixed(2)}€</span>
         <button class="ticket-item-remove" onclick="removeFromTicket(${i})">✕</button>
       </span>
     </div>`).join('');
-  const total = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
-  document.getElementById('ticket-total').textContent = total.toFixed(2) + ' €';
+
+  if (ticketDiscount) {
+    const raw = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+    let reducLabel = '';
+    if (ticketDiscount.type === 'pct') reducLabel = `${ticketDiscount.motif} (-${ticketDiscount.valeur}%)`;
+    else if (ticketDiscount.type === 'fixe') reducLabel = `${ticketDiscount.motif} (-${ticketDiscount.valeur.toFixed(2)}€)`;
+    else if (ticketDiscount.type === 'total') reducLabel = `${ticketDiscount.motif} (total forcé)`;
+
+    const reducDisplay = ticketDiscount.type === 'total'
+      ? `→ ${ticketDiscount.valeur.toFixed(2)} €`
+      : `-${(raw - getTicketTotal()).toFixed(2)} €`;
+
+    html += `
+      <div class="ticket-discount-row">
+        <span>🏷 ${reducLabel}</span>
+        <span style="display:flex;align-items:center;gap:0.4rem">
+          <span>${reducDisplay}</span>
+          <button class="ticket-discount-remove" onclick="supprimerReduction()" title="Supprimer la réduction">✕</button>
+        </span>
+      </div>`;
+  }
+
+  el.innerHTML = html;
+  document.getElementById('ticket-total').textContent = getTicketTotal().toFixed(2) + ' €';
 }
 
-function removeFromTicket(i) { ticket.splice(i, 1); renderTicket(); }
-function clearTicket() { ticket = []; renderTicket(); }
+function supprimerReduction() {
+  ticketDiscount = null;
+  renderTicket();
+  toast('Réduction supprimée', 'info');
+}
+
+function removeFromTicket(i) { ticket.splice(i, 1); if (!ticket.length) ticketDiscount = null; renderTicket(); }
+function clearTicket() { ticket = []; ticketDiscount = null; renderTicket(); }
 
 function selectPayment(m) {
   paymentMethod = m;
@@ -1922,16 +2198,47 @@ function selectPayment(m) {
 async function validerVente() {
   if (!caisseSoireeId) { toast('Sélectionne une soirée', 'error'); return; }
   if (!ticket.length) { toast('Le ticket est vide', 'error'); return; }
+
+  const totalFinal = getTicketTotal();
   const inserts = ticket.map(t => ({
-    soiree_id: caisseSoireeId, barman_id: currentUser.id, produit_id: t.produit_id,
-    quantite: t.quantite, prix_unitaire: t.prix, methode_paiement: paymentMethod
+    soiree_id: caisseSoireeId,
+    barman_id: currentUser.id,
+    produit_id: t.libre ? null : t.produit_id,
+    quantite: t.quantite,
+    prix_unitaire: t.prix,
+    methode_paiement: paymentMethod,
+    note: t.libre ? t.nom : null
   }));
+
+  // Si réduction, on l'encode dans la note du dernier article
+  if (ticketDiscount) {
+    inserts[inserts.length - 1].note_reduction = JSON.stringify(ticketDiscount);
+  }
+
   const { error } = await db.from('ventes_tropical').insert(inserts);
   if (error) { toast('Erreur lors de la vente', 'error'); return; }
-  const total = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
-  toast(`✓ Vente validée — ${total.toFixed(2)} € (${paymentMethod})`, 'success');
+  toast(`✓ Vente validée — ${totalFinal.toFixed(2)} € (${paymentMethod})`, 'success');
   clearTicket();
 }
+
+// ============================================================
+// Intercepter openModal pour modal-modif-total
+// ============================================================
+const originalOpenModal = window.openModal;
+window.openModal = function(id) {
+  if (id === 'modal-modif-total') {
+    const rawTotal = ticket.reduce((s, t) => s + t.prix * t.quantite, 0);
+    const actuel = document.getElementById('modif-total-actuel');
+    if (actuel) actuel.textContent = rawTotal.toFixed(2) + ' €';
+    const valInput = document.getElementById('modif-total-val');
+    if (valInput) valInput.value = '';
+    const motifInput = document.getElementById('modif-total-motif');
+    if (motifInput) motifInput.value = '';
+    const preview = document.getElementById('modif-total-preview');
+    if (preview) preview.style.display = 'none';
+  }
+  document.getElementById(id).classList.add('open');
+};
 
 // ============================================================
 // PATRON: SOIREES
@@ -1994,23 +2301,12 @@ async function createSoiree() {
   const prix = parseFloat(document.getElementById('cs-prix').value) || 0;
   const desc = document.getElementById('cs-desc').value.trim();
   if (!nom || !date) { toast('Nom et date requis', 'error'); return; }
-
-  const { data: soiree, error } = await db.from('soirees_tropical').insert({
-    nom, date_soiree: date, heure_debut: heure, prix_entree: prix,
-    description: desc, created_by: currentUser.id
-  }).select().single();
-
+  const { data: soiree, error } = await db.from('soirees_tropical').insert({ nom, date_soiree: date, heure_debut: heure, prix_entree: prix, description: desc, created_by: currentUser.id }).select().single();
   if (error) { toast('Erreur création soirée', 'error'); return; }
-
   const checks = document.querySelectorAll('.worker-check:checked');
   const assigns = [];
-  checks.forEach(c => assigns.push({
-    soiree_id: soiree.id,
-    employee_id: c.dataset.id,
-    role_soiree: document.getElementById('cwr-' + c.dataset.id).value
-  }));
+  checks.forEach(c => assigns.push({ soiree_id: soiree.id, employee_id: c.dataset.id, role_soiree: document.getElementById('cwr-' + c.dataset.id).value }));
   if (assigns.length) await db.from('assignations_tropical').insert(assigns);
-
   closeModal('modal-create-soiree');
   toast('Soirée créée !', 'success');
   loadSoireesAdmin();
@@ -2033,10 +2329,8 @@ async function renderManageSoiree(soireeId, nom) {
     db.from('employees_tropical').select('*').eq('is_active', true),
     db.from('services_tropical').select('*, employees_tropical(username)').eq('soiree_id', soireeId)
   ]);
-
   const assignedIds = assignations?.map(a => a.employee_id) || [];
   const available = allEmployees?.filter(e => !assignedIds.includes(e.id)) || [];
-
   document.getElementById('ms-content').innerHTML = `
     <div style="margin-bottom:1.5rem">
       <h4 style="font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.8rem">ÉQUIPE ASSIGNÉE</h4>
@@ -2047,7 +2341,6 @@ async function renderManageSoiree(soireeId, nom) {
           <button class="btn-danger btn-sm" onclick="removeAssignation('${a.id}','${soireeId}','${esc(nom)}')">✕</button>
         </div>`).join('') : '<p style="color:var(--text-dim);font-size:0.88rem">Aucun employé assigné</p>'}
     </div>
-
     ${available.length ? `
     <div style="margin-bottom:1.5rem">
       <h4 style="font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.8rem">AJOUTER UN EMPLOYÉ</h4>
@@ -2062,7 +2355,6 @@ async function renderManageSoiree(soireeId, nom) {
         <button class="btn-primary btn-sm" onclick="addAssignation('${soireeId}','${esc(nom)}')">+ Ajouter</button>
       </div>
     </div>` : ''}
-
     <div>
       <h4 style="font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.8rem">SERVICES (${services?.length||0})</h4>
       ${services?.map(s => `
@@ -2298,32 +2590,27 @@ async function loadRapport(soireeId) {
   if (!soireeId) return;
   const el = document.getElementById('rapport-content');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
   const [{ data: s }, { data: ent }, { data: ven }, { data: srv }] = await Promise.all([
     db.from('soirees_tropical').select('*').eq('id', soireeId).single(),
     db.from('entrees_tropical').select('*').eq('soiree_id', soireeId),
     db.from('ventes_tropical').select('*, produits_tropical(nom,emoji)').eq('soiree_id', soireeId),
     db.from('services_tropical').select('*, employees_tropical(username)').eq('soiree_id', soireeId)
   ]);
-
   const entrees = ent || [];
   const ventes = ven || [];
   const services = srv || [];
-
   const caBar = ventes.filter(v => v.methode_paiement !== 'offert').reduce((s, v) => s + parseFloat(v.total), 0);
   const caEntrees = entrees.filter(e => e.type_entree !== 'refusee').length * (s?.prix_entree || 0);
   const totalCA = caBar + caEntrees;
   const totalEntrees = entrees.filter(e => e.type_entree !== 'refusee').length;
   const totalMinutes = services.reduce((s, sv) => s + (sv.duree_minutes || 0), 0);
-
   const byProd = {};
   ventes.forEach(v => {
-    const key = v.produit_id;
-    if (!byProd[key]) byProd[key] = { nom: v.produits_tropical?.nom || '?', emoji: v.produits_tropical?.emoji || '', qte: 0, total: 0 };
+    const key = v.produit_id || v.note || '?';
+    if (!byProd[key]) byProd[key] = { nom: v.produits_tropical?.nom || v.note || '?', emoji: v.produits_tropical?.emoji || '🎁', qte: 0, total: 0 };
     byProd[key].qte += v.quantite;
     byProd[key].total += parseFloat(v.total);
   });
-
   el.innerHTML = `
     <div class="rapport-grid">
       <div class="rapport-card"><div class="rapport-value" style="color:var(--neon-cyan)">${totalCA.toFixed(2)} €</div><div class="rapport-label">CA Total</div></div>
@@ -2333,7 +2620,6 @@ async function loadRapport(soireeId) {
       <div class="rapport-card"><div class="rapport-value" style="color:var(--sunset-orange)">${entrees.filter(e=>e.type_entree==='refusee').length}</div><div class="rapport-label">Refusées</div></div>
       <div class="rapport-card"><div class="rapport-value" style="color:var(--neon-cyan)">${ventes.length}</div><div class="rapport-label">Transactions</div></div>
     </div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1rem">
       <div>
         <h4 style="font-family:'Orbitron',sans-serif;font-size:0.85rem;color:var(--neon-cyan);margin-bottom:1rem;letter-spacing:2px">ÉQUIPE & PRIMES</h4>
@@ -2369,47 +2655,26 @@ async function loadRapport(soireeId) {
 // PUBLIC: MENU
 // ============================================================
 const catLabels = {
-  all: '🍹 Tous',
-  cocktail: '🍹 Cocktails',
-  biere: '🍺 Bières',
-  shot: '🥃 Shots',
-  soft: '🥤 Softs',
-  bouteille: '🍾 Bouteilles',
-  autre: '📦 Autre'
+  all: '🍹 Tous', cocktail: '🍹 Cocktails', biere: '🍺 Bières',
+  shot: '🥃 Shots', soft: '🥤 Softs', bouteille: '🍾 Bouteilles', autre: '📦 Autre'
 };
 
 async function loadPublicMenu(filterCat) {
   if (filterCat !== undefined) currentMenuCat = filterCat;
-
   const { data } = await db.from('produits_tropical').select('*').eq('is_active', true).order('categorie');
   const allProduits = data || [];
-
   if (!allProduits.length) {
     document.getElementById('menu-categories').innerHTML = '';
-    document.getElementById('menu-grid').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">🍹</div>
-        <div class="empty-state-text">Le menu est en cours de préparation…</div>
-      </div>`;
+    document.getElementById('menu-grid').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🍹</div><div class="empty-state-text">Le menu est en cours de préparation…</div></div>`;
     return;
   }
-
   const cats = ['all', ...new Set(allProduits.map(p => p.categorie))];
-
   document.getElementById('menu-categories').innerHTML = cats.map(c =>
-    `<button class="cat-btn ${c === currentMenuCat ? 'active' : ''}" onclick="loadPublicMenu('${c}')">
-      ${catLabels[c] || c}
-    </button>`
+    `<button class="cat-btn ${c === currentMenuCat ? 'active' : ''}" onclick="loadPublicMenu('${c}')">${catLabels[c] || c}</button>`
   ).join('');
-
   const filtered = currentMenuCat === 'all' ? allProduits : allProduits.filter(p => p.categorie === currentMenuCat);
-
   const grouped = {};
-  filtered.forEach(p => {
-    if (!grouped[p.categorie]) grouped[p.categorie] = [];
-    grouped[p.categorie].push(p);
-  });
-
+  filtered.forEach(p => { if (!grouped[p.categorie]) grouped[p.categorie] = []; grouped[p.categorie].push(p); });
   document.getElementById('menu-grid').innerHTML = Object.entries(grouped).map(([cat, items]) => `
     <div class="menu-section-title">${catLabels[cat] || cat}</div>
     <div class="menu-grid-items">
@@ -2495,20 +2760,11 @@ function showAlbumsView() {
 // ============================================================
 // UTILS
 // ============================================================
-function fmtDate(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-}
-function fmtTime(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-}
+function fmtDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }); }
+function fmtTime(d) { if (!d) return '—'; return new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
 function fmtDuration(ms) {
   const s = Math.floor(ms / 1000);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+  return `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
 }
 function typeEmoji(t) { return t==='soiree'?'🎉':t==='promo'?'💥':t==='urgent'?'🚨':'ℹ️'; }
 function esc(str) { return (str||'').replace(/'/g,"\\'"); }
